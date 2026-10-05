@@ -153,12 +153,8 @@
             </select>
           </div>
         </div>
-        <span class="label sub-label">Tabla altı destek — dikine omega büküm</span>
-        <div class="grid g-3">
-          <div class="field">
-            <label for="tz_omegaGap">Omega Aralığı</label>
-            <div class="input-group"><input id="tz_omegaGap" name="tz_omegaGap" type="number" min="200" max="1500" step="10" value="600" inputmode="numeric" /><span class="addon">mm</span></div>
-          </div>
+        <span class="label sub-label">Omega destek — üst tabla ve taban rafı altına</span>
+        <div class="grid g-2">
           <div class="field">
             <label for="tz_omegaW">Omega Açınımı</label>
             <div class="input-group"><input id="tz_omegaW" name="tz_omegaW" type="number" min="40" max="400" step="5" value="120" inputmode="numeric" /><span class="addon">mm</span></div>
@@ -173,25 +169,31 @@
             </select>
           </div>
         </div>
+        <p class="note">Omega adedi boya göre: 800 mm altı → 1 &nbsp;·&nbsp; 800–1300 → 2 &nbsp;·&nbsp; 1300–2000 → 3 (her 700 mm için +1).</p>
 
         <!-- ===== Ayaklı model ===== -->
         <div data-when="tz_model=ayakli">
-          <h3 class="group-title">Ayak &amp; Alt Raf</h3>
+          <h3 class="group-title">Ayak, Yalpalık &amp; Alt Raf</h3>
+          <span class="label sub-label">Yalpalık — 40×20×1 mm profil (arka hariç; duvara gelen tarafı kaldırın)</span>
+          <div class="chips" role="group" aria-label="Tezgah yalpalık kenarları">
+            <label class="chip"><input type="checkbox" id="tz_yalFront" name="tz_yalFront" checked /><span>Ön</span></label>
+            <label class="chip"><input type="checkbox" id="tz_yalLeft" name="tz_yalLeft" checked /><span>Sol</span></label>
+            <label class="chip"><input type="checkbox" id="tz_yalRight" name="tz_yalRight" checked /><span>Sağ</span></label>
+          </div>
           <div class="grid g-2">
             <div class="field">
-              <label for="tz_shelf">Alt Raf</label>
+              <label for="tz_shelf">Alt (Taban) Raf</label>
               <select id="tz_shelf" name="tz_shelf">
                 <option value="none" selected>Yok</option>
-                <option value="flat">Var — Düz Sac (1.0 mm)</option>
-                <option value="grid">Var — Izgara (Ø16×1 boru)</option>
+                <option value="flat">Var — Düz Sac</option>
               </select>
             </div>
-            <div class="field" data-when="tz_shelf!=none">
-              <label for="tz_lowRail">Alt Raf Kayıtları</label>
-              <select id="tz_lowRail" name="tz_lowRail">
-                <option value="sides">Yan kayıtlar (2 × derinlik)</option>
-                <option value="h">H tipi (2 yan + 1 boy)</option>
-                <option value="perimeter" selected>Çevre (2 boy + 2 yan)</option>
+            <div class="field" data-when="tz_shelf=flat">
+              <label for="tz_lowShelfT">Taban Rafı Sacı</label>
+              <select id="tz_lowShelfT" name="tz_lowShelfT">
+                <option value="0.8">0.8 mm</option>
+                <option value="1.0" selected>1.0 mm</option>
+                <option value="1.2">1.2 mm</option>
               </select>
             </div>
           </div>
@@ -211,25 +213,44 @@
               </select>
             </div>
             <div class="field">
-              <label for="tz_bottom">Taban</label>
+              <label for="tz_plinth">Taban Yerden Yüksekliği</label>
+              <div class="input-group"><input id="tz_plinth" name="tz_plinth" type="number" min="0" max="250" step="5" value="100" inputmode="numeric" /><span class="addon">mm</span></div>
+            </div>
+            <div class="field">
+              <label for="tz_bottom">Taban Rafı</label>
               <select id="tz_bottom" name="tz_bottom">
-                <option value="1" selected>Var (mobilya sacı)</option>
+                <option value="1" selected>Var</option>
                 <option value="0">Yok</option>
+              </select>
+            </div>
+            <div class="field" data-when="tz_bottom=1">
+              <label for="tz_bottomT">Taban Rafı Sacı</label>
+              <select id="tz_bottomT" name="tz_bottomT">
+                <option value="0.8">0.8 mm</option>
+                <option value="1.0" selected>1.0 mm</option>
+                <option value="1.2">1.2 mm</option>
               </select>
             </div>
             <div class="field">
               <label for="tz_door">Kapak Tipi</label>
               <select id="tz_door" name="tz_door">
-                <option value="hinged" selected>Çarpma Kapak</option>
+                <option value="hinged" selected>Çarpma Kapak (çift cidar)</option>
                 <option value="sliding">Sürgü Kapak</option>
                 <option value="none">Kapaksız (Açık Dolap)</option>
               </select>
             </div>
-            <div class="field" data-when="tz_door!=none">
-              <label for="tz_doorT">Kapak Sacı</label>
-              <select id="tz_doorT" name="tz_doorT">
-                <option value="0.8" selected>0.8 mm</option>
-                <option value="1.0">1.0 mm</option>
+            <div class="field" data-when="tz_door=hinged">
+              <label for="tz_hingedT">Çift Cidar Sacı</label>
+              <select id="tz_hingedT" name="tz_hingedT">
+                <option value="0.8" selected>2 × 0.8 mm</option>
+                <option value="1.0">2 × 1.0 mm</option>
+              </select>
+            </div>
+            <div class="field" data-when="tz_door=sliding">
+              <label for="tz_slidingT">Sürgü Kapak Sacı</label>
+              <select id="tz_slidingT" name="tz_slidingT">
+                <option value="0.8">0.8 mm</option>
+                <option value="1.0" selected>1.0 mm</option>
                 <option value="1.2">1.2 mm</option>
               </select>
             </div>
@@ -248,10 +269,6 @@
                 <option value="1.0">1.0 mm</option>
                 <option value="1.2">1.2 mm</option>
               </select>
-            </div>
-            <div class="field">
-              <label for="tz_plinth">Taban Yerden Yüksekliği</label>
-              <div class="input-group"><input id="tz_plinth" name="tz_plinth" type="number" min="0" max="250" step="5" value="100" inputmode="numeric" /><span class="addon">mm</span></div>
             </div>
           </div>
 

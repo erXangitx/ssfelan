@@ -43,11 +43,10 @@
     edgeFlange: 40,    // üst tabla ön/yan etek büküm payı
     backReturn: 20,    // sırt üst dönüş büküm payı
     legInset: 80,      // ayaklar arası çerçeve için iç mesafe (2 × profil)
-    shelfT: 1.0,       // alt raf sac kalınlığı
     shelfFlange: 30,   // alt raf kenar büküm
-    gridPitch: 60,     // ızgara boru aralığı
     panelFlange: 20,   // gövde panelleri büküm payı
     doorFlange: 25,    // kapak kenar büküm payı
+    innerFlange: 15,   // çift cidar kapak iç sacı büküm payı
     railStrip: 60,     // sürgü kapak ray şeridi açınım genişliği
     hingedMaxW: 600,   // çarpma kapak maksimum kanat genişliği
     sinkRim: 20,       // imalat evye haznesi kaynak/kenar payı
@@ -74,9 +73,10 @@
     furniture: "tezgah", grade: "304", qty: 1, price: 4.2, currency: "USD",
     laborMode: "percent", laborPercent: 40, laborPerKg: 2,
     tz_model: "ayakli", tz_L: 1500, tz_W: 700, tz_H: 900, tz_t: "1.2", tz_back: "100",
-    tz_omegaGap: 600, tz_omegaW: 120, tz_omegaT: "1.2",
-    tz_shelf: "none", tz_lowRail: "perimeter",
-    tz_bodyT: "0.8", tz_bottom: "1", tz_door: "hinged", tz_doorT: "0.8", tz_inShelves: "1", tz_shelfT: "0.8", tz_plinth: 100,
+    tz_omegaW: 120, tz_omegaT: "1.2",
+    tz_yalFront: "1", tz_yalLeft: "1", tz_yalRight: "1", tz_shelf: "none", tz_lowShelfT: "1.0",
+    tz_bodyT: "0.8", tz_plinth: 100, tz_bottom: "1", tz_bottomT: "1.0",
+    tz_door: "hinged", tz_hingedT: "0.8", tz_slidingT: "1.0", tz_inShelves: "1", tz_shelfT: "0.8",
     tz_block: "0", tz_blockW: 450, tz_blockN: 3, tz_blockPos: "right",
     tz_sink: "0", tz_sinkSrc: "ready", tz_sinkPrice: 0, tz_sinkA: 500, tz_sinkB: 400, tz_sinkD: 250, tz_sinkN: "1", tz_sinkT: "1.2",
     tz_machine: "0", tz_machineType: "dish", tz_machinePos: "left",
@@ -86,7 +86,7 @@
     rf_yalFront: "1", rf_yalBack: "0", rf_yalLeft: "1", rf_yalRight: "1",
   };
 
-  const STORAGE_KEY = "ss-furniture-calc:v4";
+  const STORAGE_KEY = "ss-furniture-calc:v5";
 
   // ---------------------------------------------------------
   // 2) TEMEL HESAP FONKSİYONLARI
@@ -122,6 +122,26 @@
   // 3) MOBİLYA HESAPLAYICILARI
   //    Her biri 1 adet ürün için parça listesi döndürür.
   // ---------------------------------------------------------
+  /** Omega destek adedi (boya göre): <800 → 1, 800–1300 → 2, 1300–2000 → 3, sonra her 700 mm'de +1 */
+  function omegaCount(len) {
+    if (len < 800) return 1;
+    if (len < 1300) return 2;
+    if (len <= 2000) return 3;
+    return 3 + Math.ceil((len - 2000) / 700);
+  }
+
+  /** Omega destek parçası: derinlik yönünde (dikine), verilen boya göre adet */
+  function omegaPart(name, spanL, depth, omega, density) {
+    const n = omegaCount(spanL);
+    return sheetPart(`${name} (${n} adet)`, `${n} × ${depth}×${omega.w} açınım`,
+      n * mm2ToM2(depth, omega.w), omega.t, density);
+  }
+
+  /** Çarpma kapak: çift cidar (dış + iç sac) */
+  function doubleSkinArea(w, h) {
+    return flangedArea(w, h, TZ.doorFlange) + flangedArea(w - 2 * TZ.doorFlange, h - 2 * TZ.doorFlange, TZ.innerFlange);
+  }
+
   /**
    * Tezgahın önden görünüşte boy yönündeki bölümleri (soldan sağa).
    * Çekmece bloğu ve makine boşluğu, kapak/raf bölgesinin eninden düşülür.
@@ -138,40 +158,35 @@
     return { segments: [...left, zone, ...right], zoneL: zone.w };
   }
 
-  /** Ayaklı tezgah: 4 köşede 40×40×1.2 profil ayak, opsiyonel alt raf + kayıtları */
+  /** Ayaklı tezgah: 4 köşede 40×40×1.2 profil ayak, 40×20×1 yalpalık, opsiyonel taban rafı */
   function tezgahAyakli(p, density) {
-    const { L, W, H, shelf, lowRail } = p;
+    const { L, W, H, shelf, lowShelfT, yal } = p;
     const parts = [];
-    const boxKgM = boxKgPerM(BOX_PROFILE, density);
     const inL = L - TZ.legInset;
     const inW = W - TZ.legInset;
     const legLen = H - TZ.edgeFlange;
 
-    parts.push(profilePart("Ayaklar (4 adet)", `${BOX_PROFILE.label} · 4×${legLen}`, 4 * legLen, boxKgM));
+    parts.push(profilePart("Ayaklar (4 adet)", `${BOX_PROFILE.label} · 4×${legLen}`, 4 * legLen, boxKgPerM(BOX_PROFILE, density)));
 
-    if (shelf !== "none") {
-      const rails = {
-        sides: ["Alt raf kayıtları (yanlar)", `2×${inW}`, 2 * inW],
-        h: ["Alt raf kayıtları (H tipi)", `2×${inW} + 1×${inL}`, 2 * inW + inL],
-        perimeter: ["Alt raf kayıtları (çevre)", `2×${inL} + 2×${inW}`, 2 * inL + 2 * inW],
-      }[lowRail];
-      parts.push(profilePart(rails[0], rails[1], rails[2], boxKgM));
+    // Yalpalık: ön / sol / sağ (arka yok)
+    const sides = [["Ön", yal.front, inL], ["Sol", yal.left, inW], ["Sağ", yal.right, inW]].filter(([, on]) => on);
+    if (sides.length) {
+      const len = sides.reduce((a, [, , l]) => a + l, 0);
+      parts.push(profilePart(`Yalpalık — ${sides.map(([n]) => n).join(", ")}`,
+        `${YAL_PROFILE.label} · ${sides.map(([, , l]) => l).join(" + ")}`, len, boxKgPerM(YAL_PROFILE, density)));
+    }
 
-      if (shelf === "flat") {
-        parts.push(sheetPart("Alt raf (düz sac)", `${inL}×${inW} + ${TZ.shelfFlange} mm büküm`,
-          flangedArea(inL, inW, TZ.shelfFlange), TZ.shelfT, density));
-      } else {
-        const count = Math.floor(inW / TZ.gridPitch) + 1;
-        parts.push(profilePart("Alt raf ızgarası", `${GRID_TUBE.label} · ${count}×${inL}`,
-          count * inL, tubeKgPerM(GRID_TUBE, density)));
-      }
+    if (shelf === "flat") {
+      parts.push(sheetPart("Taban rafı", `${inL}×${inW} + ${TZ.shelfFlange} mm büküm`,
+        flangedArea(inL, inW, TZ.shelfFlange), lowShelfT, density));
+      parts.push(omegaPart("Taban rafı omega", inL, inW, p.omega, density));
     }
     return parts;
   }
 
   /** Dolaplı tezgah: profil ayak yok; çevresi mobilya sacı ile kapatılır */
   function tezgahDolapli(p, density, notices) {
-    const { L, W, H, door, block, machine, bodyT, doorT, shelfT, inShelves, bottom, plinth } = p;
+    const { L, W, H, door, block, machine, bodyT, hingedT, slidingT, shelfT, inShelves, bottom, bottomT, plinth } = p;
     const parts = [];
     const pf = TZ.panelFlange;
     const { zoneL } = tezgahZones(p);
@@ -184,7 +199,8 @@
     if (bodyLen > 0) {
       parts.push(sheetPart("Arka panel", `${bodyLen}×${sideH}`, flangedArea(bodyLen, sideH, pf), bodyT, density));
       if (bottom) {
-        parts.push(sheetPart("Taban", `${bodyLen}×${W - 20}`, flangedArea(bodyLen, W - 20, pf), bodyT, density));
+        parts.push(sheetPart("Taban rafı", `${bodyLen}×${W - 20}`, flangedArea(bodyLen, W - 20, pf), bottomT, density));
+        parts.push(omegaPart("Taban rafı omega", bodyLen, W - 40, p.omega, density));
       }
     }
 
@@ -202,12 +218,13 @@
       if (door === "sliding") {
         const n = zoneL > 1800 ? 3 : 2;
         const dw = Math.round(zoneL / n + 25);
-        parts.push(sheetPart(`Sürgü kapak (${n} adet)`, `${n} × ${dw}×${doorH}`, n * flangedArea(dw, doorH, TZ.doorFlange), doorT, density));
-        parts.push(sheetPart("Sürgü rayları (alt + üst)", `2 × ${zoneL}×${TZ.railStrip}`, 2 * mm2ToM2(zoneL, TZ.railStrip), doorT, density));
+        parts.push(sheetPart(`Sürgü kapak (${n} adet)`, `${n} × ${dw}×${doorH}`, n * flangedArea(dw, doorH, TZ.doorFlange), slidingT, density));
+        parts.push(sheetPart("Sürgü rayları (alt + üst)", `2 × ${zoneL}×${TZ.railStrip}`, 2 * mm2ToM2(zoneL, TZ.railStrip), slidingT, density));
       } else {
         const n = Math.max(1, Math.ceil(zoneL / TZ.hingedMaxW));
         const dw = Math.round(zoneL / n - 3);
-        parts.push(sheetPart(`Çarpma kapak (${n} adet)`, `${n} × ${dw}×${doorH}`, n * flangedArea(dw, doorH, TZ.doorFlange), doorT, density));
+        parts.push(sheetPart(`Çarpma kapak (${n} adet, çift cidar)`, `${n} × ${dw}×${doorH} dış + iç`,
+          n * doubleSkinArea(dw, doorH), hingedT, density));
       }
     }
 
@@ -224,8 +241,8 @@
       const box = mm2ToM2(boxW, boxD) + 2 * mm2ToM2(boxD, boxH) + 2 * mm2ToM2(boxW, boxH);
       parts.push(sheetPart(`Çekmece kutuları (${block.count} adet)`, `${block.count} × ${boxW}×${boxD}×${boxH}`,
         block.count * box, bodyT, density));
-      parts.push(sheetPart(`Çekmece önleri (${block.count} adet)`, `${block.count} × ${bw - 4}×${frontH - 4}`,
-        block.count * flangedArea(bw - 4, frontH - 4, pf), doorT, density));
+      parts.push(sheetPart(`Çekmece önleri (${block.count} adet, çift cidar)`, `${block.count} × ${bw - 4}×${frontH - 4} dış + iç`,
+        block.count * doubleSkinArea(bw - 4, frontH - 4), hingedT, density));
       if (frontH < 120) notices.push(`Çekmece ön yüksekliği ${frontH} mm — adet bu yükseklik için fazla olabilir.`);
     }
 
@@ -261,10 +278,7 @@
       }
 
       // Tabla altına derinlik yönünde (dikine) omega büküm destekler
-      const omegaN = Math.max(1, Math.ceil(L / p.omega.gap) - 1);
-      const omegaLen = W - 20;
-      parts.push(sheetPart(`Omega destek (${omegaN} adet)`, `${omegaN} × ${omegaLen}×${p.omega.w} açınım`,
-        omegaN * mm2ToM2(omegaLen, p.omega.w), p.omega.t, density));
+      parts.push(omegaPart("Tabla altı omega", L, W - 20, p.omega, density));
 
       // İmalat evye haznesi sac ağırlığına eklenir; hazır evye fiyatı compute() içinde eklenir
       if (sink && sink.src === "fab") {
@@ -420,12 +434,14 @@
       s.params = {
         model, L: num("tz_L"), W: num("tz_W"), H: num("tz_H"),
         t: parseFloat(val("tz_t")), back: int("tz_back"),
-        omega: { gap: num("tz_omegaGap"), w: num("tz_omegaW"), t: parseFloat(val("tz_omegaT")) },
+        omega: { w: num("tz_omegaW"), t: parseFloat(val("tz_omegaT")) },
         // Ayaklı
-        shelf: val("tz_shelf"), lowRail: val("tz_lowRail"),
+        yal: { front: chk("tz_yalFront"), left: chk("tz_yalLeft"), right: chk("tz_yalRight") },
+        shelf: val("tz_shelf"), lowShelfT: parseFloat(val("tz_lowShelfT")),
         // Dolaplı
-        bodyT: parseFloat(val("tz_bodyT")), bottom: val("tz_bottom") === "1", plinth: num("tz_plinth"),
-        door: val("tz_door"), doorT: parseFloat(val("tz_doorT")),
+        bodyT: parseFloat(val("tz_bodyT")), plinth: num("tz_plinth"),
+        bottom: val("tz_bottom") === "1", bottomT: parseFloat(val("tz_bottomT")),
+        door: val("tz_door"), hingedT: parseFloat(val("tz_hingedT")), slidingT: parseFloat(val("tz_slidingT")),
         inShelves: int("tz_inShelves"), shelfT: parseFloat(val("tz_shelfT")),
         block: dolapli && chk("tz_block")
           ? { width: num("tz_blockW"), count: Math.max(1, Math.min(6, int("tz_blockN") || 1)), pos: val("tz_blockPos") }
@@ -438,7 +454,7 @@
           }
           : null,
       };
-      s.dims = ["tz_L", "tz_W", "tz_H", "tz_omegaGap", "tz_omegaW"];
+      s.dims = ["tz_L", "tz_W", "tz_H", "tz_omegaW"];
       if (dolapli) s.dims.push("tz_plinth");
       if (s.params.block) s.dims.push("tz_blockW");
       if (s.params.sink && s.params.sink.src === "fab") s.dims.push("tz_sinkA", "tz_sinkB", "tz_sinkD");
@@ -515,13 +531,15 @@
         ["Ölçü (L×W×H)", `${p.L}×${p.W}×${p.H} mm`],
         ["Tabla sacı", `${fmtNum(p.t, 1)} mm`],
         ["Sırt", selText("tz_back")],
-        ["Omega destek", `${p.omega.gap} mm aralık, ${p.omega.w} mm açınım, ${fmtNum(p.omega.t, 1)} mm`],
+        ["Omega destek", `${p.omega.w} mm açınım, ${fmtNum(p.omega.t, 1)} mm`],
       ];
       if (p.model === "dolapli") {
         specific.push(
           ["Mobilya sacı", `${fmtNum(p.bodyT, 1)} mm`],
-          ["Taban", p.bottom ? `Var, yerden ${p.plinth} mm` : "Yok"],
-          ["Kapak", p.door === "none" ? "Kapaksız" : `${selText("tz_door")}, ${fmtNum(p.doorT, 1)} mm`],
+          ["Taban rafı", p.bottom ? `${fmtNum(p.bottomT, 1)} mm, yerden ${p.plinth} mm` : "Yok"],
+          ["Kapak", p.door === "none" ? "Kapaksız"
+            : p.door === "hinged" ? `Çarpma, çift cidar 2 × ${fmtNum(p.hingedT, 1)} mm`
+            : `Sürgü, ${fmtNum(p.slidingT, 1)} mm`],
           ["Ara raf", p.inShelves > 0 ? `${p.inShelves} adet, ${fmtNum(p.shelfT, 1)} mm` : "Yok"],
           ["Çekmece bloğu", p.block ? `${p.block.count}'lü, ${p.block.width} mm, ${posText(p.block.pos)}` : "Yok"],
           ["Makine bölümü", p.machine ? `${MACHINE_NAMES[p.machine.type]}, ${posText(p.machine.pos)}` : "Yok"],
@@ -529,9 +547,10 @@
       } else {
         specific.push(
           ["Ayaklar", "4 × 40×40×1.2 mm"],
-          ["Alt raf", selText("tz_shelf")],
+          ["Yalpalık (40×20×1)", [["Ön", p.yal.front], ["Sol", p.yal.left], ["Sağ", p.yal.right]]
+            .filter(([, on]) => on).map(([n]) => n).join(", ") || "Yok"],
+          ["Taban rafı", p.shelf === "flat" ? `Var, ${fmtNum(p.lowShelfT, 1)} mm` : "Yok"],
         );
-        if (p.shelf !== "none") specific.push(["Alt raf kayıtları", selText("tz_lowRail")]);
       }
       specific.push(["Evye", sinkText]);
     } else if (s.furniture === "dolap") {

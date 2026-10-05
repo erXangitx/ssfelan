@@ -28,10 +28,14 @@ canlı **ağırlık ve maliyet** hesaplayan, bağımlılıksız bir web uygulama
 
 ## Opsiyonlar
 
-- **Çalışma tezgahı** — iki model, ortak üst tabla + sırt + tabla altı omega destek + evye:
-  - *Ayaklı:* 4 köşede 40×40×1.2 profil ayak; alt raf opsiyonel (yok/düz/ızgara + kayıt tipi).
-  - *Dolaplı:* profil ayak yok; yan + arka + taban mobilya sacı (varsayılan 0.8 mm),
-    çarpma/sürgü kapak, ara raflı/rafsız, çekmece bloğu ve makine bölümü.
+- **Çalışma tezgahı** — iki model, ortak üst tabla + sırt + omega destek + evye:
+  - *Omega adedi* (tabla ve taban rafı altı, boya göre): <800 mm → 1, 800–1300 → 2,
+    1300–2000 → 3, sonrası her 700 mm için +1.
+  - *Ayaklı:* 4 köşede 40×40×1.2 profil ayak; 40×20×1 yalpalık ön/sol/sağ (tek tıkla);
+    opsiyonel 1.0 mm taban rafı + omega.
+  - *Dolaplı:* profil ayak yok; yan + arka mobilya sacı (0.8 mm), 1.0 mm taban rafı + omega,
+    çarpma kapak çift cidar (2 × 0.8 mm) veya sürgü kapak (1.0 mm), ara raflı/rafsız,
+    çekmece bloğu ve makine bölümü.
   - Evye: hazır evye birim fiyatı (ayrı maliyet satırı) veya imalat hazne ağırlığı.
 - **Duvar dolabı:** ara raf (yok/1–3), Ø8 dolu mil yalpalık (ara raflar ve/veya taban, 1–2 sıra).
 - **İstif rafı:** her katta 40×20×1 mm profil yalpalık (deniz bağı) — ön/arka/sol/sağ tek tıkla.
