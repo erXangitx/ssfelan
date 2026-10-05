@@ -85,23 +85,18 @@
           </div>
         </div>
 
-        <div class="field">
-          <span class="label">İşçilik / İmalat Payı</span>
-          <div class="segmented" role="radiogroup" aria-label="İşçilik hesaplama yöntemi">
-            <label><input type="radio" name="laborMode" value="percent" checked /><span>Malzeme × %</span></label>
-            <label><input type="radio" name="laborMode" value="perKg" /><span>Kg başına</span></label>
+        <h3 class="group-title">İşçilik</h3>
+        <div class="grid g-2">
+          <div class="field">
+            <label for="laborHours">İşçilik Saati (1 adet için)</label>
+            <div class="input-group"><input id="laborHours" name="laborHours" type="number" min="0" step="0.5" value="8" inputmode="decimal" /><span class="addon">saat</span></div>
           </div>
-        </div>
-        <div class="field" data-when="laborMode=percent">
-          <label for="laborPercent">İşçilik / Lazer / Büküm Oranı: <output id="laborPercentOut" for="laborPercent">%40</output></label>
-          <input id="laborPercent" name="laborPercent" type="range" min="0" max="100" step="1" value="40" />
-          <div class="range-hints"><span>%0</span><span class="hint-band">Önerilen: %30–%50</span><span>%100</span></div>
-        </div>
-        <div class="field" data-when="laborMode=perKg">
-          <label for="laborPerKg">Kg Başına İşçilik</label>
-          <div class="input-group">
-            <input id="laborPerKg" name="laborPerKg" type="number" min="0" step="0.01" value="2.00" inputmode="decimal" />
-            <span class="addon" data-currency-suffix>USD/kg</span>
+          <div class="field">
+            <label for="laborRate">İşçilik Saat Ücreti</label>
+            <div class="input-group">
+              <input id="laborRate" name="laborRate" type="number" min="0" step="0.01" value="10" inputmode="decimal" />
+              <span class="addon" data-currency-hour>USD/saat</span>
+            </div>
           </div>
         </div>
       </section>
@@ -121,7 +116,7 @@
         <div class="grid g-3">
           <div class="field">
             <label for="tz_L">En (L)</label>
-            <div class="input-group"><input id="tz_L" name="tz_L" type="number" min="300" max="4000" step="10" value="1500" inputmode="numeric" /><span class="addon">mm</span></div>
+            <div class="input-group"><input id="tz_L" name="tz_L" type="number" min="300" max="2400" step="10" value="1500" inputmode="numeric" /><span class="addon">mm</span></div>
           </div>
           <div class="field">
             <label for="tz_W">Derinlik (W)</label>
@@ -169,7 +164,7 @@
             </select>
           </div>
         </div>
-        <p class="note">Omega adedi boya göre: 800 mm altı → 1 &nbsp;·&nbsp; 800–1300 → 2 &nbsp;·&nbsp; 1300–2000 → 3 (her 700 mm için +1).</p>
+        <p class="note">Omega adedi boya göre: 800 mm altı → 1 &nbsp;·&nbsp; 800–1300 → 2 &nbsp;·&nbsp; 1300–2000 → 3 &nbsp;·&nbsp; 2000–2400 → 4.</p>
 
         <!-- ===== Ayaklı model ===== -->
         <div data-when="tz_model=ayakli">
@@ -563,7 +558,7 @@
 
         <dl class="cost-list">
           <div><dt><i class="dot dot-mat"></i>Malzeme Maliyeti</dt><dd id="costMaterial">0</dd></div>
-          <div><dt><i class="dot dot-lab"></i>İşçilik / İmalat Payı <small id="laborLabel"></small></dt><dd id="costLabor">0</dd></div>
+          <div><dt><i class="dot dot-lab"></i>İşçilik <small id="laborLabel"></small></dt><dd id="costLabor">0</dd></div>
           <div id="extraRow" hidden><dt><i class="dot dot-ext"></i>Hazır Ürünler <small id="extraLabel"></small></dt><dd id="costExtra">0</dd></div>
           <div class="total"><dt>Toplam (<span id="sumQty">1</span> adet)</dt><dd id="costTotal">0</dd></div>
         </dl>

@@ -47,6 +47,7 @@
     panelFlange: 20,   // gövde panelleri büküm payı
     doorFlange: 25,    // kapak kenar büküm payı
     innerFlange: 15,   // çift cidar kapak iç sacı büküm payı
+    drawerT: 0.8,      // çekmece (kutu + çift cidar ön) sac kalınlığı
     railStrip: 60,     // sürgü kapak ray şeridi açınım genişliği
     hingedMaxW: 600,   // çarpma kapak maksimum kanat genişliği
     sinkRim: 20,       // imalat evye haznesi kaynak/kenar payı
@@ -71,7 +72,7 @@
 
   const DEFAULTS = {
     furniture: "tezgah", grade: "304", qty: 1, price: 4.2, currency: "USD",
-    laborMode: "percent", laborPercent: 40, laborPerKg: 2,
+    laborHours: 8, laborRate: 10,
     tz_model: "ayakli", tz_L: 1500, tz_W: 700, tz_H: 900, tz_t: "1.2", tz_back: "100",
     tz_omegaW: 120, tz_omegaT: "1.2",
     tz_yalFront: "1", tz_yalLeft: "1", tz_yalRight: "1", tz_shelf: "none", tz_lowShelfT: "1.0",
@@ -86,7 +87,7 @@
     rf_yalFront: "1", rf_yalBack: "0", rf_yalLeft: "1", rf_yalRight: "1",
   };
 
-  const STORAGE_KEY = "ss-furniture-calc:v5";
+  const STORAGE_KEY = "ss-furniture-calc:v6";
 
   // ---------------------------------------------------------
   // 2) TEMEL HESAP FONKSİYONLARI
@@ -130,9 +131,16 @@
     return 3 + Math.ceil((len - 2000) / 700);
   }
 
+  /** Dolap ara rafı altı omega adedi: ≤700 → 1, ≤1500 → 2, üstü → 3 */
+  function shelfOmegaCount(len) {
+    if (len <= 700) return 1;
+    if (len <= 1500) return 2;
+    return 3;
+  }
+
   /** Omega destek parçası: derinlik yönünde (dikine), verilen boya göre adet */
-  function omegaPart(name, spanL, depth, omega, density) {
-    const n = omegaCount(spanL);
+  function omegaPart(name, spanL, depth, omega, density, countFn = omegaCount) {
+    const n = countFn(spanL);
     return sheetPart(`${name} (${n} adet)`, `${n} × ${depth}×${omega.w} açınım`,
       n * mm2ToM2(depth, omega.w), omega.t, density);
   }
@@ -208,6 +216,12 @@
     if (inShelves > 0 && zoneL > 0) {
       parts.push(sheetPart(`Ara raf (${inShelves} adet)`, `${inShelves} × ${zoneL - 10}×${W - 60}`,
         inShelves * flangedArea(zoneL - 10, W - 60, TZ.shelfFlange), shelfT, density));
+      const shelfOmega = omegaPart("Ara raf omega", zoneL - 10, W - 60, p.omega, density, shelfOmegaCount);
+      if (inShelves > 1) { // her raf için aynı sayıda omega
+        shelfOmega.name = shelfOmega.name.replace(/\((\d+) adet\)/, (_, n) => `(${inShelves} raf × ${n} adet)`);
+        shelfOmega.kg *= inShelves; shelfOmega.area *= inShelves;
+      }
+      parts.push(shelfOmega);
     }
 
     // --- Kapaklar ---
@@ -240,9 +254,9 @@
       const boxH = Math.max(80, frontH - 50);
       const box = mm2ToM2(boxW, boxD) + 2 * mm2ToM2(boxD, boxH) + 2 * mm2ToM2(boxW, boxH);
       parts.push(sheetPart(`Çekmece kutuları (${block.count} adet)`, `${block.count} × ${boxW}×${boxD}×${boxH}`,
-        block.count * box, bodyT, density));
+        block.count * box, TZ.drawerT, density));
       parts.push(sheetPart(`Çekmece önleri (${block.count} adet, çift cidar)`, `${block.count} × ${bw - 4}×${frontH - 4} dış + iç`,
-        block.count * doubleSkinArea(bw - 4, frontH - 4), hingedT, density));
+        block.count * doubleSkinArea(bw - 4, frontH - 4), TZ.drawerT, density));
       if (frontH < 120) notices.push(`Çekmece ön yüksekliği ${frontH} mm — adet bu yükseklik için fazla olabilir.`);
     }
 
@@ -423,9 +437,8 @@
       qty: Math.max(1, Math.floor(num("qty")) || 1),
       price: Math.max(0, num("price") || 0),
       currency: val("currency"),
-      laborMode: getRadio("laborMode"),
-      laborPercent: num("laborPercent"),
-      laborPerKg: Math.max(0, num("laborPerKg") || 0),
+      laborHours: Math.max(0, num("laborHours") || 0),
+      laborRate: Math.max(0, num("laborRate") || 0),
     };
 
     if (furniture === "tezgah") {
@@ -518,7 +531,7 @@
       ["Malzeme", GRADES[s.grade].name],
       ["Yoğunluk", `${GRADES[s.grade].density} g/cm³`],
       ["Kg fiyatı", `${fmtMoney(s.price, s.currency)}/kg`],
-      ["İşçilik", s.laborMode === "percent" ? `Malzeme × %${s.laborPercent}` : `${fmtMoney(s.laborPerKg, s.currency)}/kg`],
+      ["İşçilik", `${fmtNum(s.laborHours, 1)} saat × ${fmtMoney(s.laborRate, s.currency)}/saat`],
     ];
     const posText = (pos) => (pos === "left" ? "solda" : "sağda");
     let specific;
@@ -594,9 +607,7 @@
 
     const totalKg = unit.kg * s.qty;
     const material = totalKg * s.price;
-    const labor = s.laborMode === "percent"
-      ? material * (s.laborPercent / 100)
-      : totalKg * s.laborPerKg;
+    const labor = s.laborHours * s.laborRate * s.qty;
     // Hazır alınan ürünler (ağırlığa ve işçilik payına girmez)
     const extras = [];
     const sink = s.furniture === "tezgah" ? s.params.sink : null;
@@ -634,10 +645,7 @@
     const cur = val("currency");
     $$("[data-currency-suffix]").forEach((el) => { el.textContent = `${cur}/kg`; });
     $$("[data-currency-code]").forEach((el) => { el.textContent = cur; });
-
-    const range = $("#laborPercent");
-    range.style.setProperty("--fill", `${range.value}%`);
-    $("#laborPercentOut").textContent = `%${range.value}`;
+    $$("[data-currency-hour]").forEach((el) => { el.textContent = `${cur}/saat`; });
   }
 
   /** Tezgah yerleşim önizlemesi: blok, makine ve kapak/raf bölgesi oranları */
@@ -698,9 +706,7 @@
     $("#extraRow").hidden = r.extras.length === 0;
     $("#costExtra").textContent = fmtMoney(r.extra, s.currency);
     $("#extraLabel").textContent = r.extras.length ? `(${r.extras.map((e) => e.name).join(", ")})` : "";
-    $("#laborLabel").textContent = s.laborMode === "percent"
-      ? `(%${s.laborPercent})`
-      : `(${fmtNum(s.laborPerKg)} ${s.currency}/kg)`;
+    $("#laborLabel").textContent = `(${fmtNum(s.laborHours, 1)} saat × ${fmtMoney(s.laborRate, s.currency)}${s.qty > 1 ? ` × ${s.qty} adet` : ""})`;
 
     const pct = (v) => (r.total > 0 ? (v / r.total) * 100 : 0);
     $("#barMaterial").style.width = `${r.total > 0 ? pct(r.material) : 100}%`;
