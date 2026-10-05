@@ -28,8 +28,8 @@ canlı **ağırlık ve maliyet** hesaplayan, bağımlılıksız bir web uygulama
 
 ## Opsiyonlar
 
-- **Çalışma tezgahı:** kapak tipi (kapaksız / çarpma / sürgü — dolaplı gövde), çekmece bloğu
-  (genişlik, adet, sağ/sol), evye (hazne ölçüsü ve adedi; tabla kesiği ağırlıktan düşülür),
+- **Çalışma tezgahı:** üst kayıt (yok/çevre), alt kayıt (yok/yanlar/H/çevre), kapak tipi (kapaksız / çarpma / sürgü — dolaplı gövde), çekmece bloğu
+  (genişlik, adet, sağ/sol), evye (hazır evye birim fiyatı veya imalat hazne ağırlığı),
   bulaşık/çamaşır makinesi bölümü (600×700×820 mm boşluk; tezgah yüksekliği en az 900 mm).
   Blok ve makine genişliği kapak/raf bölgesinden düşülür, yerleşim önizlemesinde gösterilir.
 - **Duvar dolabı:** ara raf (yok/1–3), Ø8 dolu mil yalpalık (ara raflar ve/veya taban, 1–2 sıra).

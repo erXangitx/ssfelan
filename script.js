@@ -52,7 +52,7 @@
     doorFlange: 25,    // kapak kenar büküm payı
     railStrip: 60,     // sürgü kapak ray şeridi açınım genişliği
     hingedMaxW: 600,   // çarpma kapak maksimum kanat genişliği
-    sinkRim: 20,       // evye hazne kaynak/kenar payı
+    sinkRim: 20,       // imalat evye haznesi kaynak/kenar payı
     sinkMargin: 100,   // hazne çevresinde bırakılacak minimum tabla
   };
 
@@ -76,8 +76,9 @@
     furniture: "tezgah", grade: "304", qty: 1, price: 4.2, currency: "USD",
     laborMode: "percent", laborPercent: 40, laborPerKg: 2,
     tz_L: 1500, tz_W: 700, tz_H: 900, tz_t: "1.2", tz_back: "100", tz_shelf: "flat", tz_door: "none",
+    tz_topRail: "none", tz_lowRail: "perimeter",
     tz_block: "0", tz_blockW: 450, tz_blockN: 3, tz_blockPos: "right",
-    tz_sink: "0", tz_sinkA: 500, tz_sinkB: 400, tz_sinkD: 250, tz_sinkN: "1", tz_sinkT: "1.2",
+    tz_sink: "0", tz_sinkSrc: "ready", tz_sinkPrice: 0, tz_sinkA: 500, tz_sinkB: 400, tz_sinkD: 250, tz_sinkN: "1", tz_sinkT: "1.2",
     tz_machine: "0", tz_machineType: "dish", tz_machinePos: "left",
     dl_L: 1200, dl_H: 650, dl_D: 350, dl_t: "1.0", dl_door: "sliding", dl_shelves: "1",
     dl_railShelf: "0", dl_railBase: "0", dl_railRows: "1",
@@ -85,7 +86,7 @@
     rf_yalFront: "1", rf_yalBack: "0", rf_yalLeft: "1", rf_yalRight: "1",
   };
 
-  const STORAGE_KEY = "ss-furniture-calc:v2";
+  const STORAGE_KEY = "ss-furniture-calc:v3";
 
   // ---------------------------------------------------------
   // 2) TEMEL HESAP FONKSİYONLARI
@@ -140,7 +141,7 @@
   const calculators = {
     /** A) Çalışma tezgahı */
     tezgah(p, density, notices) {
-      const { L, W, H, t, back, shelf, door, block, sink, machine } = p;
+      const { L, W, H, t, back, shelf, door, topRail, lowRail, block, sink, machine } = p;
       const parts = [];
       const boxKgM = boxKgPerM(BOX_PROFILE, density);
       const tubeKgM = tubeKgPerM(GRID_TUBE, density);
@@ -151,13 +152,12 @@
       const closed = door !== "none" && zoneL > 0;
       const pf = TZ.panelFlange;
 
-      // --- Üst tabla (+ evye kesiği düşümü) ---
+      // --- Üst tabla ---
       parts.push(sheetPart("Üst tabla", `${L}×${W} + ${TZ.edgeFlange} mm etek`,
         flangedArea(L, W, TZ.edgeFlange), t, density));
 
-      if (sink) {
-        const cut = sink.count * mm2ToM2(sink.a, sink.b);
-        parts.push(sheetPart("Evye kesiği (düşülür)", `−${sink.count} × ${sink.a}×${sink.b}`, -cut, t, density));
+      // İmalat evye haznesi sac ağırlığına eklenir; hazır evye fiyatı compute() içinde eklenir
+      if (sink && sink.src === "fab") {
         const basin = mm2ToM2(sink.a, sink.b) + 2 * mm2ToM2(sink.a + sink.b, sink.d)
           + 2 * mm2ToM2(sink.a + sink.b, TZ.sinkRim);
         parts.push(sheetPart(`Evye haznesi (${sink.count} adet)`, `${sink.a}×${sink.b}×${sink.d}`,
@@ -176,17 +176,20 @@
       const legCount = 4 + extraLegs;
       parts.push(profilePart(`Ayaklar (${legCount} adet)`, `${BOX_PROFILE.label} · ${legCount}×${legLen}`,
         legCount * legLen, boxKgM));
-      parts.push(profilePart("Üst çerçeve kayıtları", `2×${inL} + ${2 + extraLegs / 2}×${inW}`,
-        2 * inL + (2 + extraLegs / 2) * inW, boxKgM));
+      if (topRail === "perimeter") {
+        const cross = 2 + extraLegs / 2;
+        parts.push(profilePart("Üst kayıtlar (çevre)", `2×${inL} + ${cross}×${inW}`, 2 * inL + cross * inW, boxKgM));
+      }
 
-      // Makine bölmesinin altında kayıt olmaz
+      // Alt kayıtlar — makine bölmesinin altında kayıt olmaz
       const lowerSpan = machine ? L - MACHINE.w - TZ.legInset : inL;
-      if (lowerSpan > 0) {
-        if (shelf === "none" && !closed && !block) {
-          parts.push(profilePart("Alt kayıtlar (H tipi)", `2×${inW} + 1×${lowerSpan}`, 2 * inW + lowerSpan, boxKgM));
-        } else {
-          parts.push(profilePart("Alt çerçeve kayıtları", `2×${lowerSpan} + 2×${inW}`, 2 * lowerSpan + 2 * inW, boxKgM));
-        }
+      if (lowRail !== "none" && lowerSpan > 0) {
+        const rails = {
+          sides: ["Alt kayıtlar (yanlar)", `2×${inW}`, 2 * inW],
+          h: ["Alt kayıtlar (H tipi)", `2×${inW} + 1×${lowerSpan}`, 2 * inW + lowerSpan],
+          perimeter: ["Alt kayıtlar (çevre)", `2×${lowerSpan} + 2×${inW}`, 2 * lowerSpan + 2 * inW],
+        }[lowRail];
+        parts.push(profilePart(rails[0], rails[1], rails[2], boxKgM));
       }
 
       // --- Alt raf: yalnızca kapak/raf bölgesinde ---
@@ -395,17 +398,21 @@
       s.params = {
         L: num("tz_L"), W: num("tz_W"), H: num("tz_H"),
         t: parseFloat(val("tz_t")), back: int("tz_back"), shelf: val("tz_shelf"), door: val("tz_door"),
+        topRail: val("tz_topRail"), lowRail: val("tz_lowRail"),
         block: chk("tz_block")
           ? { width: num("tz_blockW"), count: Math.max(1, Math.min(6, int("tz_blockN") || 1)), pos: val("tz_blockPos") }
           : null,
         sink: chk("tz_sink")
-          ? { a: num("tz_sinkA"), b: num("tz_sinkB"), d: num("tz_sinkD"), count: int("tz_sinkN"), t: parseFloat(val("tz_sinkT")) }
+          ? {
+            src: val("tz_sinkSrc"), count: int("tz_sinkN"), price: Math.max(0, num("tz_sinkPrice") || 0),
+            a: num("tz_sinkA"), b: num("tz_sinkB"), d: num("tz_sinkD"), t: parseFloat(val("tz_sinkT")),
+          }
           : null,
         machine: chk("tz_machine") ? { type: val("tz_machineType"), pos: val("tz_machinePos") } : null,
       };
       s.dims = ["tz_L", "tz_W", "tz_H"];
       if (s.params.block) s.dims.push("tz_blockW");
-      if (s.params.sink) s.dims.push("tz_sinkA", "tz_sinkB", "tz_sinkD");
+      if (s.params.sink && s.params.sink.src === "fab") s.dims.push("tz_sinkA", "tz_sinkB", "tz_sinkD");
       s.title = `${s.params.L} × ${s.params.W} × ${s.params.H} mm`;
     } else if (furniture === "dolap") {
       s.params = {
@@ -451,7 +458,7 @@
       const used = [p.block && `blok ${p.block.width}`, p.machine && `makine ${MACHINE.w}`].filter(Boolean).join(" + ");
       errors.push(`Ek bölümler (${used} mm) tezgah enini (${p.L} mm) aşıyor`);
     }
-    if (p.sink) {
+    if (p.sink && p.sink.src === "fab") {
       const needL = p.sink.count * p.sink.a + (p.sink.count + 1) * TZ.sinkMargin;
       if (needL > p.L) errors.push(`Evye hazneleri için en az ${needL} mm tezgah eni gerekir`);
       if (p.sink.b + 2 * TZ.sinkMargin > p.W) errors.push(`Hazne boyu için tezgah derinliği en az ${p.sink.b + 2 * TZ.sinkMargin} mm olmalı`);
@@ -477,8 +484,12 @@
         ["Sırt", selText("tz_back")],
         ["Alt raf", selText("tz_shelf")],
         ["Kapak", selText("tz_door")],
+        ["Üst kayıt", selText("tz_topRail")],
+        ["Alt kayıt", selText("tz_lowRail")],
         ["Çekmece bloğu", p.block ? `${p.block.count}'lü, ${p.block.width} mm, ${posText(p.block.pos)}` : "Yok"],
-        ["Evye", p.sink ? `${p.sink.count} × ${p.sink.a}×${p.sink.b}×${p.sink.d} mm` : "Yok"],
+        ["Evye", !p.sink ? "Yok"
+          : p.sink.src === "ready" ? `Hazır, ${p.sink.count} × ${fmtMoney(p.sink.price, s.currency)}`
+          : `İmalat, ${p.sink.count} × ${p.sink.a}×${p.sink.b}×${p.sink.d} mm`],
         ["Makine bölümü", p.machine ? `${MACHINE_NAMES[p.machine.type]}, ${posText(p.machine.pos)}` : "Yok"],
         ["Ayak profili", "40×40×1.2 mm"],
       ];
@@ -526,9 +537,17 @@
     const labor = s.laborMode === "percent"
       ? material * (s.laborPercent / 100)
       : totalKg * s.laborPerKg;
-    const total = material + labor;
+    // Hazır alınan ürünler (ağırlığa ve işçilik payına girmez)
+    const extras = [];
+    const sink = s.furniture === "tezgah" ? s.params.sink : null;
+    if (sink && sink.src === "ready") {
+      extras.push({ name: `Evye ${sink.count} × ${fmtMoney(sink.price, s.currency)}`, amount: sink.count * sink.price * s.qty });
+      if (sink.price === 0) notices.push("Hazır evye fiyatı girilmedi.");
+    }
+    const extra = extras.reduce((a, e) => a + e.amount, 0);
+    const total = material + labor + extra;
 
-    return { parts, notices, unit, totalKg, material, labor, total, unitTotal: total / s.qty };
+    return { parts, notices, extras, extra, unit, totalKg, material, labor, total, unitTotal: total / s.qty };
   }
 
   // ---------------------------------------------------------
@@ -554,6 +573,7 @@
 
     const cur = val("currency");
     $$("[data-currency-suffix]").forEach((el) => { el.textContent = `${cur}/kg`; });
+    $$("[data-currency-code]").forEach((el) => { el.textContent = cur; });
 
     const range = $("#laborPercent");
     range.style.setProperty("--fill", `${range.value}%`);
@@ -593,7 +613,7 @@
 
     if (errors.length) {
       lastResult = null;
-      ["#kpiWeight", "#kpiTotal", "#costMaterial", "#costLabor", "#costTotal"].forEach((id) => { $(id).textContent = "—"; });
+      ["#kpiWeight", "#kpiTotal", "#costMaterial", "#costLabor", "#costExtra", "#costTotal"].forEach((id) => { $(id).textContent = "—"; });
       $("#kpiWeightUnit").textContent = "Ölçüleri kontrol edin";
       $("#kpiTotalUnit").textContent = "";
       $("#partsBody").innerHTML = "";
@@ -615,13 +635,17 @@
     $("#costMaterial").textContent = fmtMoney(r.material, s.currency);
     $("#costLabor").textContent = fmtMoney(r.labor, s.currency);
     $("#costTotal").textContent = fmtMoney(r.total, s.currency);
+    $("#extraRow").hidden = r.extras.length === 0;
+    $("#costExtra").textContent = fmtMoney(r.extra, s.currency);
+    $("#extraLabel").textContent = r.extras.length ? `(${r.extras.map((e) => e.name).join(", ")})` : "";
     $("#laborLabel").textContent = s.laborMode === "percent"
       ? `(%${s.laborPercent})`
       : `(${fmtNum(s.laborPerKg)} ${s.currency}/kg)`;
 
-    const matPct = r.total > 0 ? (r.material / r.total) * 100 : 100;
-    $("#barMaterial").style.width = `${matPct}%`;
-    $("#barLabor").style.width = `${100 - matPct}%`;
+    const pct = (v) => (r.total > 0 ? (v / r.total) * 100 : 0);
+    $("#barMaterial").style.width = `${r.total > 0 ? pct(r.material) : 100}%`;
+    $("#barLabor").style.width = `${pct(r.labor)}%`;
+    $("#barExtra").style.width = `${pct(r.extra)}%`;
 
     $("#partsBody").innerHTML = r.parts.map((p) => `
       <tr${p.kg < 0 ? ' class="is-deduction"' : ""}>
@@ -704,6 +728,7 @@
       `Toplam ağırlık       : ${fmtNum(r.totalKg)} kg`,
       `Malzeme maliyeti     : ${fmtMoney(r.material, s.currency)}`,
       `İşçilik / imalat     : ${fmtMoney(r.labor, s.currency)}`,
+      ...r.extras.map((e) => `${e.name}: ${fmtMoney(e.amount, s.currency)}`),
       `TOPLAM TAHMİNİ FİYAT : ${fmtMoney(r.total, s.currency)}`,
       `Birim fiyat          : ${fmtMoney(r.unitTotal, s.currency)}`,
       line,

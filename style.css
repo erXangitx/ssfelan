@@ -435,6 +435,7 @@ input[type="range"]::-moz-range-thumb {
 .split-bar span { transition: width .35s ease; }
 #barMaterial { background: var(--accent); }
 #barLabor { background: var(--labor); }
+#barExtra { background: var(--warn); }
 
 .cost-list { margin: 0; }
 .cost-list > div {
@@ -455,6 +456,7 @@ input[type="range"]::-moz-range-thumb {
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
 .dot-mat { background: var(--accent); }
 .dot-lab { background: var(--labor); }
+.dot-ext { background: var(--warn); }
 
 .sub-title { margin: 20px 0 10px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 .sub-title small { text-transform: none; letter-spacing: 0; font-weight: 400; }

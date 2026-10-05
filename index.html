@@ -157,6 +157,22 @@
               <option value="sliding">Sürgü Kapak (Dolaplı)</option>
             </select>
           </div>
+          <div class="field">
+            <label for="tz_topRail">Üst Kayıt (tabla altı)</label>
+            <select id="tz_topRail" name="tz_topRail">
+              <option value="none" selected>Yok</option>
+              <option value="perimeter">Var — Çevre (2 boy + 2 yan)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="tz_lowRail">Alt Kayıt</label>
+            <select id="tz_lowRail" name="tz_lowRail">
+              <option value="none">Yok</option>
+              <option value="sides">Yan kayıtlar (2 × derinlik)</option>
+              <option value="h">H tipi (2 yan + 1 boy)</option>
+              <option value="perimeter" selected>Çevre (2 boy + 2 yan)</option>
+            </select>
+          </div>
         </div>
 
         <h3 class="group-title">Ek Bölümler</h3>
@@ -196,39 +212,57 @@
           <label class="switch-row">
             <input type="checkbox" id="tz_sink" name="tz_sink" />
             <span class="switch" aria-hidden="true"></span>
-            <span class="switch-text">Evye <small>Hazne eklenir, tabla kesiği ağırlıktan düşülür</small></span>
+            <span class="switch-text">Evye <small>Hazır evye fiyatı veya imalat hazne ağırlığı eklenir</small></span>
           </label>
           <div class="option-body" data-when="tz_sink=1">
-            <div class="grid g-3">
-              <div class="field">
-                <label for="tz_sinkA">Hazne En</label>
-                <div class="input-group"><input id="tz_sinkA" name="tz_sinkA" type="number" min="200" max="1200" step="10" value="500" inputmode="numeric" /><span class="addon">mm</span></div>
-              </div>
-              <div class="field">
-                <label for="tz_sinkB">Hazne Boy</label>
-                <div class="input-group"><input id="tz_sinkB" name="tz_sinkB" type="number" min="200" max="700" step="10" value="400" inputmode="numeric" /><span class="addon">mm</span></div>
-              </div>
-              <div class="field">
-                <label for="tz_sinkD">Hazne Derinliği</label>
-                <div class="input-group"><input id="tz_sinkD" name="tz_sinkD" type="number" min="100" max="450" step="10" value="250" inputmode="numeric" /><span class="addon">mm</span></div>
-              </div>
-            </div>
             <div class="grid g-2">
               <div class="field">
-                <label for="tz_sinkN">Hazne Adedi</label>
-                <select id="tz_sinkN" name="tz_sinkN">
-                  <option value="1">1 hazne</option>
-                  <option value="2">2 hazne</option>
-                  <option value="3">3 hazne</option>
+                <label for="tz_sinkSrc">Evye Tipi</label>
+                <select id="tz_sinkSrc" name="tz_sinkSrc">
+                  <option value="ready" selected>Hazır evye (fiyat girilir)</option>
+                  <option value="fab">İmalat hazne (sacdan hesaplanır)</option>
                 </select>
               </div>
               <div class="field">
-                <label for="tz_sinkT">Hazne Sac Kalınlığı</label>
-                <select id="tz_sinkT" name="tz_sinkT">
-                  <option value="1.0">1.0 mm</option>
-                  <option value="1.2" selected>1.2 mm</option>
-                  <option value="1.5">1.5 mm</option>
+                <label for="tz_sinkN">Adet</label>
+                <select id="tz_sinkN" name="tz_sinkN">
+                  <option value="1">1 adet</option>
+                  <option value="2">2 adet</option>
+                  <option value="3">3 adet</option>
                 </select>
+              </div>
+              <div class="field span-2" data-when="tz_sinkSrc=ready">
+                <label for="tz_sinkPrice">Evye Birim Fiyatı</label>
+                <div class="input-group">
+                  <input id="tz_sinkPrice" name="tz_sinkPrice" type="number" min="0" step="0.01" value="0" inputmode="decimal" />
+                  <span class="addon" data-currency-code>USD</span>
+                </div>
+              </div>
+            </div>
+            <div data-when="tz_sinkSrc=fab">
+              <div class="grid g-3">
+                <div class="field">
+                  <label for="tz_sinkA">Hazne En</label>
+                  <div class="input-group"><input id="tz_sinkA" name="tz_sinkA" type="number" min="200" max="1200" step="10" value="500" inputmode="numeric" /><span class="addon">mm</span></div>
+                </div>
+                <div class="field">
+                  <label for="tz_sinkB">Hazne Boy</label>
+                  <div class="input-group"><input id="tz_sinkB" name="tz_sinkB" type="number" min="200" max="700" step="10" value="400" inputmode="numeric" /><span class="addon">mm</span></div>
+                </div>
+                <div class="field">
+                  <label for="tz_sinkD">Hazne Derinliği</label>
+                  <div class="input-group"><input id="tz_sinkD" name="tz_sinkD" type="number" min="100" max="450" step="10" value="250" inputmode="numeric" /><span class="addon">mm</span></div>
+                </div>
+              </div>
+              <div class="grid g-2">
+                <div class="field">
+                  <label for="tz_sinkT">Hazne Sac Kalınlığı</label>
+                  <select id="tz_sinkT" name="tz_sinkT">
+                    <option value="1.0">1.0 mm</option>
+                    <option value="1.2" selected>1.2 mm</option>
+                    <option value="1.5">1.5 mm</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -264,7 +298,7 @@
           <div class="layout-bar" id="tzLayout"></div>
         </div>
 
-        <p class="note">Ayaklar: 40×40×1.2 mm kutu profil — 4 ayak + üst çerçeve + alt kayıtlar. Makine bölümünde alt kayıt/raf olmaz, bölme kenarına 2 ek ayak konur.</p>
+        <p class="note">Ayaklar: 40×40×1.2 mm kutu profil (4 ayak). Üst/alt kayıt tipini yukarıdan seçin. Makine bölümünde alt kayıt/raf olmaz, bölme kenarına 2 ek ayak konur.</p>
       </section>
 
       <!-- ============ DUVAR DOLABI ============ -->
@@ -427,11 +461,13 @@
         <div class="split-bar" aria-hidden="true">
           <span id="barMaterial" style="width:70%"></span>
           <span id="barLabor" style="width:30%"></span>
+          <span id="barExtra" style="width:0%"></span>
         </div>
 
         <dl class="cost-list">
           <div><dt><i class="dot dot-mat"></i>Malzeme Maliyeti</dt><dd id="costMaterial">0</dd></div>
           <div><dt><i class="dot dot-lab"></i>İşçilik / İmalat Payı <small id="laborLabel"></small></dt><dd id="costLabor">0</dd></div>
+          <div id="extraRow" hidden><dt><i class="dot dot-ext"></i>Hazır Ürünler <small id="extraLabel"></small></dt><dd id="costExtra">0</dd></div>
           <div class="total"><dt>Toplam (<span id="sumQty">1</span> adet)</dt><dd id="costTotal">0</dd></div>
         </dl>
 
