@@ -150,15 +150,121 @@
             </select>
           </div>
           <div class="field">
-            <label for="tz_drawers">Çekmece Adedi</label>
-            <div class="stepper">
-              <button type="button" data-step="-1" data-target="tz_drawers" aria-label="Azalt">−</button>
-              <input id="tz_drawers" name="tz_drawers" type="number" min="0" max="4" step="1" value="0" inputmode="numeric" />
-              <button type="button" data-step="1" data-target="tz_drawers" aria-label="Arttır">+</button>
+            <label for="tz_door">Kapak Tipi</label>
+            <select id="tz_door" name="tz_door">
+              <option value="none" selected>Kapaksız (Açık Gövde)</option>
+              <option value="hinged">Çarpma Kapak (Dolaplı)</option>
+              <option value="sliding">Sürgü Kapak (Dolaplı)</option>
+            </select>
+          </div>
+        </div>
+
+        <h3 class="group-title">Ek Bölümler</h3>
+
+        <!-- Çekmece bloğu -->
+        <div class="option-block">
+          <label class="switch-row">
+            <input type="checkbox" id="tz_block" name="tz_block" />
+            <span class="switch" aria-hidden="true"></span>
+            <span class="switch-text">Çekmece Bloğu <small>Genelde 3'lü — bu genişlik kapak/raf bölgesinden düşülür</small></span>
+          </label>
+          <div class="grid g-3 option-body" data-when="tz_block=1">
+            <div class="field">
+              <label for="tz_blockW">Blok Genişliği</label>
+              <div class="input-group"><input id="tz_blockW" name="tz_blockW" type="number" min="300" max="900" step="10" value="450" inputmode="numeric" /><span class="addon">mm</span></div>
+            </div>
+            <div class="field">
+              <label for="tz_blockN">Çekmece Adedi</label>
+              <div class="stepper">
+                <button type="button" data-step="-1" data-target="tz_blockN" aria-label="Azalt">−</button>
+                <input id="tz_blockN" name="tz_blockN" type="number" min="1" max="6" step="1" value="3" inputmode="numeric" />
+                <button type="button" data-step="1" data-target="tz_blockN" aria-label="Arttır">+</button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="tz_blockPos">Konum</label>
+              <select id="tz_blockPos" name="tz_blockPos">
+                <option value="right">Sağda</option>
+                <option value="left">Solda</option>
+              </select>
             </div>
           </div>
         </div>
-        <p class="note">Ayaklar: 40×40×1.2 mm kutu profil — 4 ayak + üst çerçeve + alt kayıtlar.</p>
+
+        <!-- Evye -->
+        <div class="option-block">
+          <label class="switch-row">
+            <input type="checkbox" id="tz_sink" name="tz_sink" />
+            <span class="switch" aria-hidden="true"></span>
+            <span class="switch-text">Evye <small>Hazne eklenir, tabla kesiği ağırlıktan düşülür</small></span>
+          </label>
+          <div class="option-body" data-when="tz_sink=1">
+            <div class="grid g-3">
+              <div class="field">
+                <label for="tz_sinkA">Hazne En</label>
+                <div class="input-group"><input id="tz_sinkA" name="tz_sinkA" type="number" min="200" max="1200" step="10" value="500" inputmode="numeric" /><span class="addon">mm</span></div>
+              </div>
+              <div class="field">
+                <label for="tz_sinkB">Hazne Boy</label>
+                <div class="input-group"><input id="tz_sinkB" name="tz_sinkB" type="number" min="200" max="700" step="10" value="400" inputmode="numeric" /><span class="addon">mm</span></div>
+              </div>
+              <div class="field">
+                <label for="tz_sinkD">Hazne Derinliği</label>
+                <div class="input-group"><input id="tz_sinkD" name="tz_sinkD" type="number" min="100" max="450" step="10" value="250" inputmode="numeric" /><span class="addon">mm</span></div>
+              </div>
+            </div>
+            <div class="grid g-2">
+              <div class="field">
+                <label for="tz_sinkN">Hazne Adedi</label>
+                <select id="tz_sinkN" name="tz_sinkN">
+                  <option value="1">1 hazne</option>
+                  <option value="2">2 hazne</option>
+                  <option value="3">3 hazne</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="tz_sinkT">Hazne Sac Kalınlığı</label>
+                <select id="tz_sinkT" name="tz_sinkT">
+                  <option value="1.0">1.0 mm</option>
+                  <option value="1.2" selected>1.2 mm</option>
+                  <option value="1.5">1.5 mm</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Makine bölümü -->
+        <div class="option-block">
+          <label class="switch-row">
+            <input type="checkbox" id="tz_machine" name="tz_machine" />
+            <span class="switch" aria-hidden="true"></span>
+            <span class="switch-text">Bulaşık / Çamaşır Makinesi Bölümü <small>600×700×820 mm boşluk — tezgah yüksekliği en az 900 mm</small></span>
+          </label>
+          <div class="grid g-2 option-body" data-when="tz_machine=1">
+            <div class="field">
+              <label for="tz_machineType">Makine</label>
+              <select id="tz_machineType" name="tz_machineType">
+                <option value="dish">Bulaşık Makinesi</option>
+                <option value="laundry">Çamaşır Makinesi</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="tz_machinePos">Konum</label>
+              <select id="tz_machinePos" name="tz_machinePos">
+                <option value="left">Solda</option>
+                <option value="right">Sağda</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="layout-preview" aria-label="Tezgah yerleşimi (önden görünüş)">
+          <span class="label">Yerleşim (önden, soldan sağa)</span>
+          <div class="layout-bar" id="tzLayout"></div>
+        </div>
+
+        <p class="note">Ayaklar: 40×40×1.2 mm kutu profil — 4 ayak + üst çerçeve + alt kayıtlar. Makine bölümünde alt kayıt/raf olmaz, bölme kenarına 2 ek ayak konur.</p>
       </section>
 
       <!-- ============ DUVAR DOLABI ============ -->
@@ -197,10 +303,34 @@
           <div class="field">
             <label for="dl_shelves">İç Ara Raf</label>
             <select id="dl_shelves" name="dl_shelves">
+              <option value="0">Yok</option>
               <option value="1" selected>1 adet</option>
               <option value="2">2 adet</option>
               <option value="3">3 adet</option>
             </select>
+          </div>
+        </div>
+
+        <h3 class="group-title">Yalpalık <small>(Ø8 dolu mil, raf önünde)</small></h3>
+        <div class="option-block">
+          <label class="switch-row" data-when="dl_shelves!=0">
+            <input type="checkbox" id="dl_railShelf" name="dl_railShelf" />
+            <span class="switch" aria-hidden="true"></span>
+            <span class="switch-text">Ara raflarda yalpalık var</span>
+          </label>
+          <label class="switch-row">
+            <input type="checkbox" id="dl_railBase" name="dl_railBase" />
+            <span class="switch" aria-hidden="true"></span>
+            <span class="switch-text">Taban rafında yalpalık var</span>
+          </label>
+          <div class="grid g-2 option-body" data-when="dl_railShelf=1|dl_railBase=1">
+            <div class="field">
+              <label for="dl_railRows">Yalpalık Sırası</label>
+              <select id="dl_railRows" name="dl_railRows">
+                <option value="1">1 sıra</option>
+                <option value="2">2 sıra</option>
+              </select>
+            </div>
           </div>
         </div>
       </section>
@@ -248,7 +378,15 @@
             </select>
           </div>
         </div>
-        <p class="note">Dikmeler: 40×40×1.2 mm kutu profil — 4 dikme + her katta boy/en köprüleri.</p>
+
+        <h3 class="group-title">Yalpalık / Deniz Bağı <small>(40×20×1 mm profil, her katta)</small></h3>
+        <div class="chips" role="group" aria-label="Yalpalık kenarları">
+          <label class="chip"><input type="checkbox" id="rf_yalFront" name="rf_yalFront" checked /><span>Ön</span></label>
+          <label class="chip"><input type="checkbox" id="rf_yalBack" name="rf_yalBack" /><span>Arka</span></label>
+          <label class="chip"><input type="checkbox" id="rf_yalLeft" name="rf_yalLeft" checked /><span>Sol</span></label>
+          <label class="chip"><input type="checkbox" id="rf_yalRight" name="rf_yalRight" checked /><span>Sağ</span></label>
+        </div>
+        <p class="note">Dikmeler: 40×40×1.2 mm kutu profil — 4 dikme + her katta boy/en köprüleri. Yalpalık kenarlarını tek tıkla açıp kapatabilirsiniz.</p>
       </section>
 
       <button type="button" id="resetBtn" class="btn btn-ghost">Varsayılanlara Dön</button>
@@ -271,6 +409,7 @@
         </div>
 
         <div id="warning" class="warning" hidden></div>
+        <div id="notices" class="notice" hidden></div>
 
         <div class="kpis">
           <div class="kpi">

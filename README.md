@@ -26,6 +26,15 @@ canlı **ağırlık ve maliyet** hesaplayan, bağımlılıksız bir web uygulama
 - **İşçilik** = Malzeme × % oranı *veya* Toplam ağırlık × kg başına işçilik
 - **Toplam tahmini fiyat** = Malzeme + İşçilik
 
+## Opsiyonlar
+
+- **Çalışma tezgahı:** kapak tipi (kapaksız / çarpma / sürgü — dolaplı gövde), çekmece bloğu
+  (genişlik, adet, sağ/sol), evye (hazne ölçüsü ve adedi; tabla kesiği ağırlıktan düşülür),
+  bulaşık/çamaşır makinesi bölümü (600×700×820 mm boşluk; tezgah yüksekliği en az 900 mm).
+  Blok ve makine genişliği kapak/raf bölgesinden düşülür, yerleşim önizlemesinde gösterilir.
+- **Duvar dolabı:** ara raf (yok/1–3), Ø8 dolu mil yalpalık (ara raflar ve/veya taban, 1–2 sıra).
+- **İstif rafı:** her katta 40×20×1 mm profil yalpalık (deniz bağı) — ön/arka/sol/sağ tek tıkla.
+
 Büküm payları (etek, kenar bükümü vb.) ve imalat varsayımları `script.js` içindeki
 `TZ`, `DL`, `RF` sabitlerinden ayarlanabilir. Sonuçlar teorik ağırlıktır; kesim firesi,
 kaynak sarfı ve hazır aksesuarlar (ray, menteşe, kulp, ayarlı ayak) dahil değildir.
