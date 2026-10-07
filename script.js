@@ -47,7 +47,8 @@
     panelFlange: 20,   // gövde panelleri büküm payı
     doorFlange: 25,    // kapak kenar büküm payı
     innerFlange: 15,   // çift cidar kapak iç sacı büküm payı
-    drawerT: 0.8,      // çekmece (kutu + çift cidar ön) sac kalınlığı
+    drawerT: 0.8,
+    footProfile: 90,   // ayarlı ayak için 40×40×1.2 profil parça boyu      // çekmece (kutu + çift cidar ön) sac kalınlığı
     railStrip: 60,     // sürgü kapak ray şeridi açınım genişliği
     hingedMaxW: 600,   // çarpma kapak maksimum kanat genişliği
     sinkRim: 20,       // imalat evye haznesi kaynak/kenar payı
@@ -73,21 +74,20 @@
   const DEFAULTS = {
     furniture: "tezgah", grade: "304", qty: 1, price: 4.2, currency: "USD",
     laborHours: 8, laborRate: 10,
-    tz_model: "ayakli", tz_L: 1500, tz_W: 700, tz_H: 900, tz_t: "1.2", tz_back: "100",
+    tz_L: 1200, tz_W: 700, tz_H: 900, tz_t: "1.2", tz_back: "100",
     tz_omegaW: 120, tz_omegaT: "1.2",
-    tz_yalFront: "1", tz_yalLeft: "1", tz_yalRight: "1", tz_shelf: "none", tz_lowShelfT: "1.0",
-    tz_bodyT: "0.8", tz_plinth: 100, tz_bottom: "1", tz_bottomT: "1.0",
-    tz_door: "hinged", tz_hingedT: "0.8", tz_slidingT: "1.0", tz_inShelves: "1", tz_shelfT: "0.8",
-    tz_block: "0", tz_blockW: 450, tz_blockN: 3, tz_blockPos: "right",
+    tz_sections: [{ type: "drawer", width: "450", count: 3 }, { type: "open", width: "" }],
+    tz_yalFront: "1", tz_yalLeft: "1", tz_yalRight: "1", tz_lowShelfT: "1.0",
+    tz_bodyT: "0.8", tz_bottomT: "1.0", tz_hingedT: "0.8", tz_slidingT: "1.0", tz_shelfT: "0.8",
+    tz_plinth: 150, tz_footPrice: 0,
     tz_sink: "0", tz_sinkSrc: "ready", tz_sinkPrice: 0, tz_sinkA: 500, tz_sinkB: 400, tz_sinkD: 250, tz_sinkN: "1", tz_sinkT: "1.2",
-    tz_machine: "0", tz_machineType: "dish", tz_machinePos: "left",
     dl_L: 1200, dl_H: 650, dl_D: 350, dl_t: "1.0", dl_door: "sliding", dl_shelves: "1",
     dl_railShelf: "0", dl_railBase: "0", dl_railRows: "1",
     rf_L: 1200, rf_D: 500, rf_H: 1800, rf_levels: "4", rf_type: "flat", rf_t: "1.2",
     rf_yalFront: "1", rf_yalBack: "0", rf_yalLeft: "1", rf_yalRight: "1",
   };
 
-  const STORAGE_KEY = "ss-furniture-calc:v6";
+  const STORAGE_KEY = "ss-furniture-calc:v7";
 
   // ---------------------------------------------------------
   // 2) TEMEL HESAP FONKSİYONLARI
@@ -150,135 +150,162 @@
     return flangedArea(w, h, TZ.doorFlange) + flangedArea(w - 2 * TZ.doorFlange, h - 2 * TZ.doorFlange, TZ.innerFlange);
   }
 
-  /**
-   * Tezgahın önden görünüşte boy yönündeki bölümleri (soldan sağa).
-   * Çekmece bloğu ve makine boşluğu, kapak/raf bölgesinin eninden düşülür.
-   */
-  function tezgahZones(p) {
-    const left = [];
-    const right = [];
-    // Aynı taraftaysa makine en dışta, blok iç tarafta kalır
-    if (p.machine) (p.machine.pos === "left" ? left : right).push({ kind: "machine", w: MACHINE.w });
-    if (p.block) (p.block.pos === "left" ? left : right).unshift({ kind: "block", w: p.block.width });
-    if (p.machine && p.block && p.machine.pos === "left" && p.block.pos === "left") left.reverse();
-    const used = [...left, ...right].reduce((a, z) => a + z.w, 0);
-    const zone = { kind: "zone", w: p.L - used };
-    return { segments: [...left, zone, ...right], zoneL: zone.w };
+  // ---------------------------------------------------------
+  // TEZGAH BÖLME SİSTEMİ
+  // Tezgahın altı soldan sağa bölmelerden oluşur:
+  //   open    → açık, 40×40×1.2 profil ayaklı (opsiyonel taban rafı)
+  //   cabinet → dolap (mobilya sacı, kapak, ara raf)
+  //   drawer  → çekmece bloğu (mobilya sacı, tamamı 0.8 mm çekmece)
+  //   machine → bulaşık/çamaşır makinesi boşluğu (600 mm)
+  // ---------------------------------------------------------
+  const SECTION_NAMES = { open: "Açık", cabinet: "Dolap", drawer: "Çekmece", machine: "Makine" };
+  const isClosed = (sec) => !!sec && (sec.type === "cabinet" || sec.type === "drawer");
+  const DOOR_NAMES = { hinged: "çarpma", sliding: "sürgü", none: "kapaksız" };
+
+  function newSection(type) {
+    return { type, width: "", shelf: false, door: "hinged", shelves: 1, count: 3, machine: "dish" };
   }
 
-  /** Ayaklı tezgah: 4 köşede 40×40×1.2 profil ayak, 40×20×1 yalpalık, opsiyonel taban rafı */
-  function tezgahAyakli(p, density) {
-    const { L, W, H, shelf, lowShelfT, yal } = p;
-    const parts = [];
-    const inL = L - TZ.legInset;
-    const inW = W - TZ.legInset;
-    const legLen = H - TZ.edgeFlange;
-
-    parts.push(profilePart("Ayaklar (4 adet)", `${BOX_PROFILE.label} · 4×${legLen}`, 4 * legLen, boxKgPerM(BOX_PROFILE, density)));
-
-    // Yalpalık: ön / sol / sağ (arka yok)
-    const sides = [["Ön", yal.front, inL], ["Sol", yal.left, inW], ["Sağ", yal.right, inW]].filter(([, on]) => on);
-    if (sides.length) {
-      const len = sides.reduce((a, [, , l]) => a + l, 0);
-      parts.push(profilePart(`Yalpalık — ${sides.map(([n]) => n).join(", ")}`,
-        `${YAL_PROFILE.label} · ${sides.map(([, , l]) => l).join(" + ")}`, len, boxKgPerM(YAL_PROFILE, density)));
-    }
-
-    if (shelf === "flat") {
-      parts.push(sheetPart("Taban rafı", `${inL}×${inW} + ${TZ.shelfFlange} mm büküm`,
-        flangedArea(inL, inW, TZ.shelfFlange), lowShelfT, density));
-      parts.push(omegaPart("Taban rafı omega", inL, inW, p.omega, density));
-    }
-    return parts;
+  /** Genişlikleri çözer: makine 600 mm sabit; boş genişlikler kalanı eşit paylaşır */
+  function resolveSections(L, sections) {
+    const fixedW = (s) => (s.type === "machine" ? MACHINE.w : parseFloat(s.width));
+    const autos = sections.filter((s) => !Number.isFinite(fixedW(s)) || fixedW(s) <= 0);
+    const used = sections.reduce((a, s) => a + (autos.includes(s) ? 0 : fixedW(s)), 0);
+    const autoW = autos.length ? Math.round((L - used) / autos.length) : 0;
+    return {
+      list: sections.map((s) => ({ ...s, w: autos.includes(s) ? autoW : fixedW(s), auto: autos.includes(s) })),
+      used, autoCount: autos.length, autoW,
+    };
   }
 
-  /** Dolaplı tezgah: profil ayak yok; çevresi mobilya sacı ile kapatılır */
-  function tezgahDolapli(p, density, notices) {
-    const { L, W, H, door, block, machine, bodyT, hingedT, slidingT, shelfT, inShelves, bottom, bottomT, plinth } = p;
+  function sectionLabel(sec) {
+    if (sec.type === "open") return sec.shelf ? "Açık + taban rafı" : "Açık";
+    if (sec.type === "cabinet") return `Dolap (${DOOR_NAMES[sec.door]}${sec.shelves ? `, ${sec.shelves} ara raf` : ""})`;
+    if (sec.type === "drawer") return `${sec.count}'lü çekmece`;
+    return MACHINE_NAMES[sec.machine];
+  }
+
+  /** Bölmelere göre alt yapı parçaları */
+  function tezgahSections(p, density, ctx) {
+    const { W, H, yal } = p;
+    const secs = resolveSections(p.L, p.sections).list;
     const parts = [];
     const pf = TZ.panelFlange;
-    const { zoneL } = tezgahZones(p);
-    const sideH = H - TZ.edgeFlange;          // yerden tabla altına
-    const innerH = sideH - plinth;            // taban üstünden tabla altına
-    const bodyLen = L - (machine ? MACHINE.w : 0); // arka ve taban boyu (makine bölmesi hariç)
+    const boxKgM = boxKgPerM(BOX_PROFILE, density);
+    const legLen = H - TZ.edgeFlange;            // açık bölme ayağı: yerden tabla altına
+    const sideH = H - TZ.edgeFlange - p.plinth;  // kapalı bölme: ayarlı ayak üstünden tabla altına
+    const tag = (i, sec) => `B${i + 1} ${SECTION_NAMES[sec.type]}`;
 
-    // --- Gövde: mobilya sacı ---
-    parts.push(sheetPart("Yan paneller (2 adet)", `2 × ${W}×${sideH}`, 2 * flangedArea(W, sideH, pf), bodyT, density));
-    if (bodyLen > 0) {
-      parts.push(sheetPart("Arka panel", `${bodyLen}×${sideH}`, flangedArea(bodyLen, sideH, pf), bodyT, density));
-      if (bottom) {
-        parts.push(sheetPart("Taban rafı", `${bodyLen}×${W - 20}`, flangedArea(bodyLen, W - 20, pf), bottomT, density));
-        parts.push(omegaPart("Taban rafı omega", bodyLen, W - 40, p.omega, density));
-      }
+    // --- Bölme sınırları: profil ayak / kapalı yan sac / makine yan sacı ---
+    let legPairs = 0;
+    let closedPanels = 0;
+    let machineEdgePanels = 0;
+    for (let b = 0; b <= secs.length; b++) {
+      const left = secs[b - 1];
+      const right = secs[b];
+      if (isClosed(left) || isClosed(right)) closedPanels++;            // kapalı bölme yan sacı (komşu kapalıyla ortak)
+      else if ((left && left.type === "open") || (right && right.type === "open")) legPairs++; // profil ayak çifti
+      else machineEdgePanels++;                                          // makinenin dış yanı
     }
 
-    // --- Ara raflar (kapak bölgesinde) ---
-    if (inShelves > 0 && zoneL > 0) {
-      parts.push(sheetPart(`Ara raf (${inShelves} adet)`, `${inShelves} × ${zoneL - 10}×${W - 60}`,
-        inShelves * flangedArea(zoneL - 10, W - 60, TZ.shelfFlange), shelfT, density));
-      const shelfOmega = omegaPart("Ara raf omega", zoneL - 10, W - 60, p.omega, density, shelfOmegaCount);
-      if (inShelves > 1) { // her raf için aynı sayıda omega
-        shelfOmega.name = shelfOmega.name.replace(/\((\d+) adet\)/, (_, n) => `(${inShelves} raf × ${n} adet)`);
-        shelfOmega.kg *= inShelves; shelfOmega.area *= inShelves;
-      }
-      parts.push(shelfOmega);
+    if (legPairs) {
+      parts.push(profilePart(`Profil ayaklar (${legPairs * 2} adet)`, `${BOX_PROFILE.label} · ${legPairs * 2}×${legLen}`,
+        legPairs * 2 * legLen, boxKgM));
     }
 
-    // --- Kapaklar ---
-    if (door !== "none" && zoneL <= 0) {
-      notices.push("Blok/makine tüm eni kapladığı için kapak bölgesi kalmadı; kapak hesaplanmadı.");
-    } else if (door !== "none") {
-      const doorH = innerH - 10;
-      if (door === "sliding") {
-        const n = zoneL > 1800 ? 3 : 2;
-        const dw = Math.round(zoneL / n + 25);
-        parts.push(sheetPart(`Sürgü kapak (${n} adet)`, `${n} × ${dw}×${doorH}`, n * flangedArea(dw, doorH, TZ.doorFlange), slidingT, density));
-        parts.push(sheetPart("Sürgü rayları (alt + üst)", `2 × ${zoneL}×${TZ.railStrip}`, 2 * mm2ToM2(zoneL, TZ.railStrip), slidingT, density));
-      } else {
-        const n = Math.max(1, Math.ceil(zoneL / TZ.hingedMaxW));
-        const dw = Math.round(zoneL / n - 3);
-        parts.push(sheetPart(`Çarpma kapak (${n} adet, çift cidar)`, `${n} × ${dw}×${doorH} dış + iç`,
-          n * doubleSkinArea(dw, doorH), hingedT, density));
-      }
+    // Yalpalık: açık bölmelerin önü + tezgah uçlarındaki açık yanlar (arka yok)
+    const openSecs = secs.filter((s) => s.type === "open");
+    const yalPieces = [];
+    if (yal.front) openSecs.forEach((s) => yalPieces.push(s.w - BOX_PROFILE.w));
+    if (yal.left && secs[0] && secs[0].type === "open") yalPieces.push(W - TZ.legInset);
+    if (yal.right && secs.length && secs[secs.length - 1].type === "open") yalPieces.push(W - TZ.legInset);
+    if (yalPieces.length) {
+      parts.push(profilePart("Yalpalık", `${YAL_PROFILE.label} · ${yalPieces.join(" + ")}`,
+        yalPieces.reduce((a, l) => a + l, 0), boxKgPerM(YAL_PROFILE, density)));
     }
 
-    // --- Çekmece bloğu ---
-    if (block) {
-      const bw = block.width;
-      if (zoneL > 0) {
-        parts.push(sheetPart("Blok ara paneli", `${W}×${innerH}`, flangedArea(W, innerH, pf), bodyT, density));
+    if (closedPanels) {
+      parts.push(sheetPart(`Kapalı bölme yan sacları (${closedPanels} adet)`, `${closedPanels} × ${W}×${sideH}`,
+        closedPanels * flangedArea(W, sideH, pf), p.bodyT, density));
+      const feet = closedPanels * 2;
+      parts.push(profilePart(`Ayarlı ayak profilleri (${feet} adet)`, `${BOX_PROFILE.label} · ${feet}×${TZ.footProfile}`,
+        feet * TZ.footProfile, boxKgM));
+      ctx.counts.feet = feet;
+    }
+    if (machineEdgePanels) {
+      parts.push(sheetPart(`Makine dış yan sacı (${machineEdgePanels} adet)`, `${machineEdgePanels} × ${W}×${legLen}`,
+        machineEdgePanels * flangedArea(W, legLen, pf), p.bodyT, density));
+    }
+
+    // --- Bölme bazında parçalar ---
+    secs.forEach((sec, i) => {
+      const w = sec.w;
+      const t = tag(i, sec);
+      if (sec.type === "open") {
+        if (sec.shelf) {
+          const sw = w - BOX_PROFILE.w;
+          parts.push(sheetPart(`${t} · taban rafı`, `${sw}×${W - TZ.legInset} + ${TZ.shelfFlange} mm büküm`,
+            flangedArea(sw, W - TZ.legInset, TZ.shelfFlange), p.lowShelfT, density));
+          parts.push(omegaPart(`${t} · taban rafı omega`, sw, W - TZ.legInset, p.omega, density));
+        }
+        return;
       }
-      const frontH = Math.floor(innerH / block.count);
-      const boxW = bw - 60;
+      if (sec.type === "machine") {
+        if (H < MACHINE.minBenchH) ctx.notices.push(`${MACHINE_NAMES[sec.machine]} (${MACHINE.h} mm) için tezgah yüksekliği en az ${MACHINE.minBenchH} mm olmalı.`);
+        if (W < MACHINE.d) ctx.notices.push(`${MACHINE_NAMES[sec.machine]} derinliği ${MACHINE.d} mm; tezgah derinliği (${W} mm) yetersiz.`);
+        return;
+      }
+
+      // Kapalı bölme: arka sac + taban rafı (+ omega)
+      parts.push(sheetPart(`${t} · arka sac`, `${w}×${sideH}`, flangedArea(w, sideH, pf), p.bodyT, density));
+      parts.push(sheetPart(`${t} · taban rafı`, `${w}×${W - 20}`, flangedArea(w, W - 20, pf), p.bottomT, density));
+      parts.push(omegaPart(`${t} · taban omega`, w, W - 40, p.omega, density));
+
+      if (sec.type === "cabinet") {
+        if (sec.shelves > 0) {
+          parts.push(sheetPart(`${t} · ara raf (${sec.shelves} adet)`, `${sec.shelves} × ${w - 10}×${W - 60}`,
+            sec.shelves * flangedArea(w - 10, W - 60, TZ.shelfFlange), p.shelfT, density));
+          const om = omegaPart(`${t} · ara raf omega`, w - 10, W - 60, p.omega, density, shelfOmegaCount);
+          if (sec.shelves > 1) {
+            om.name = om.name.replace(/\((\d+) adet\)/, (_, n) => `(${sec.shelves} raf × ${n} adet)`);
+            om.kg *= sec.shelves; om.area *= sec.shelves;
+          }
+          parts.push(om);
+        }
+        const doorH = sideH - 10;
+        if (sec.door === "sliding") {
+          const n = w > 1800 ? 3 : 2;
+          const dw = Math.round(w / n + 25);
+          parts.push(sheetPart(`${t} · sürgü kapak (${n} adet)`, `${n} × ${dw}×${doorH}`, n * flangedArea(dw, doorH, TZ.doorFlange), p.slidingT, density));
+          parts.push(sheetPart(`${t} · sürgü rayları`, `2 × ${w}×${TZ.railStrip}`, 2 * mm2ToM2(w, TZ.railStrip), p.slidingT, density));
+        } else if (sec.door === "hinged") {
+          const n = Math.max(1, Math.ceil(w / TZ.hingedMaxW));
+          const dw = Math.round(w / n - 3);
+          parts.push(sheetPart(`${t} · çarpma kapak (${n} adet, çift cidar)`, `${n} × ${dw}×${doorH} dış + iç`,
+            n * doubleSkinArea(dw, doorH), p.hingedT, density));
+        }
+        return;
+      }
+
+      // Çekmece bloğu — tamamı 0.8 mm
+      const n = sec.count;
+      const frontH = Math.floor(sideH / n);
+      const boxW = w - 60;
       const boxD = W - 120;
       const boxH = Math.max(80, frontH - 50);
       const box = mm2ToM2(boxW, boxD) + 2 * mm2ToM2(boxD, boxH) + 2 * mm2ToM2(boxW, boxH);
-      parts.push(sheetPart(`Çekmece kutuları (${block.count} adet)`, `${block.count} × ${boxW}×${boxD}×${boxH}`,
-        block.count * box, TZ.drawerT, density));
-      parts.push(sheetPart(`Çekmece önleri (${block.count} adet, çift cidar)`, `${block.count} × ${bw - 4}×${frontH - 4} dış + iç`,
-        block.count * doubleSkinArea(bw - 4, frontH - 4), TZ.drawerT, density));
-      if (frontH < 120) notices.push(`Çekmece ön yüksekliği ${frontH} mm — adet bu yükseklik için fazla olabilir.`);
-    }
-
-    // --- Makine bölümü ---
-    if (machine) {
-      if (bodyLen > 0) {
-        parts.push(sheetPart("Makine bölmesi ara paneli", `${W}×${sideH}`, flangedArea(W, sideH, pf), bodyT, density));
-      }
-      if (H < MACHINE.minBenchH) {
-        notices.push(`${MACHINE_NAMES[machine.type]} (${MACHINE.h} mm) için tezgah yüksekliği en az ${MACHINE.minBenchH} mm olmalı.`);
-      }
-      if (W < MACHINE.d) {
-        notices.push(`${MACHINE_NAMES[machine.type]} derinliği ${MACHINE.d} mm; tezgah derinliği (${W} mm) yetersiz.`);
-      }
-    }
+      parts.push(sheetPart(`${t} · çekmece kutuları (${n} adet)`, `${n} × ${boxW}×${boxD}×${boxH}`, n * box, TZ.drawerT, density));
+      parts.push(sheetPart(`${t} · çekmece önleri (${n} adet, çift cidar)`, `${n} × ${w - 4}×${frontH - 4} dış + iç`,
+        n * doubleSkinArea(w - 4, frontH - 4), TZ.drawerT, density));
+      if (frontH < 120) ctx.notices.push(`${t}: çekmece ön yüksekliği ${frontH} mm — adet bu yükseklik için fazla olabilir.`);
+    });
 
     return parts;
   }
 
   const calculators = {
     /** A) Çalışma tezgahı */
-    tezgah(p, density, notices) {
+    tezgah(p, density, ctx) {
       const { L, W, H, t, back, sink } = p;
       const parts = [];
 
@@ -302,9 +329,7 @@
           sink.count * basin, sink.t, density));
       }
 
-      return parts.concat(p.model === "dolapli"
-        ? tezgahDolapli(p, density, notices)
-        : tezgahAyakli(p, density));
+      return parts.concat(tezgahSections(p, density, ctx));
     },
 
     /** B) Duvar dolabı */
@@ -442,24 +467,16 @@
     };
 
     if (furniture === "tezgah") {
-      const model = getRadio("tz_model");
-      const dolapli = model === "dolapli";
       s.params = {
-        model, L: num("tz_L"), W: num("tz_W"), H: num("tz_H"),
+        L: num("tz_L"), W: num("tz_W"), H: num("tz_H"),
         t: parseFloat(val("tz_t")), back: int("tz_back"),
         omega: { w: num("tz_omegaW"), t: parseFloat(val("tz_omegaT")) },
-        // Ayaklı
+        sections: tzSections.map((x) => ({ ...newSection(x.type), ...x })),
         yal: { front: chk("tz_yalFront"), left: chk("tz_yalLeft"), right: chk("tz_yalRight") },
-        shelf: val("tz_shelf"), lowShelfT: parseFloat(val("tz_lowShelfT")),
-        // Dolaplı
-        bodyT: parseFloat(val("tz_bodyT")), plinth: num("tz_plinth"),
-        bottom: val("tz_bottom") === "1", bottomT: parseFloat(val("tz_bottomT")),
-        door: val("tz_door"), hingedT: parseFloat(val("tz_hingedT")), slidingT: parseFloat(val("tz_slidingT")),
-        inShelves: int("tz_inShelves"), shelfT: parseFloat(val("tz_shelfT")),
-        block: dolapli && chk("tz_block")
-          ? { width: num("tz_blockW"), count: Math.max(1, Math.min(6, int("tz_blockN") || 1)), pos: val("tz_blockPos") }
-          : null,
-        machine: dolapli && chk("tz_machine") ? { type: val("tz_machineType"), pos: val("tz_machinePos") } : null,
+        lowShelfT: parseFloat(val("tz_lowShelfT")),
+        bodyT: parseFloat(val("tz_bodyT")), bottomT: parseFloat(val("tz_bottomT")),
+        hingedT: parseFloat(val("tz_hingedT")), slidingT: parseFloat(val("tz_slidingT")), shelfT: parseFloat(val("tz_shelfT")),
+        plinth: num("tz_plinth"), footPrice: Math.max(0, num("tz_footPrice") || 0),
         sink: chk("tz_sink")
           ? {
             src: val("tz_sinkSrc"), count: int("tz_sinkN"), price: Math.max(0, num("tz_sinkPrice") || 0),
@@ -468,8 +485,7 @@
           : null,
       };
       s.dims = ["tz_L", "tz_W", "tz_H", "tz_omegaW"];
-      if (dolapli) s.dims.push("tz_plinth");
-      if (s.params.block) s.dims.push("tz_blockW");
+      if (s.params.sections.some(isClosed)) s.dims.push("tz_plinth");
       if (s.params.sink && s.params.sink.src === "fab") s.dims.push("tz_sinkA", "tz_sinkB", "tz_sinkD");
       s.title = `${s.params.L} × ${s.params.W} × ${s.params.H} mm`;
     } else if (furniture === "dolap") {
@@ -511,11 +527,16 @@
     if (errors.length || state.furniture !== "tezgah") return errors;
 
     const p = state.params;
-    const { zoneL } = tezgahZones(p);
-    if (zoneL < 0) {
-      const used = [p.block && `blok ${p.block.width}`, p.machine && `makine ${MACHINE.w}`].filter(Boolean).join(" + ");
-      errors.push(`Ek bölümler (${used} mm) tezgah enini (${p.L} mm) aşıyor`);
+    if (!p.sections.length) errors.push("En az bir alt bölme ekleyin");
+    const res = resolveSections(p.L, p.sections);
+    if (res.autoCount === 0 && res.used !== p.L) {
+      errors.push(`Bölmeler toplamı ${res.used} mm, tezgah eni ${p.L} mm — eşit olmalı (bir bölmenin genişliğini boş bırakırsanız kalanı alır)`);
+    } else if (res.autoCount > 0 && res.autoW < 200) {
+      errors.push(`Kalan genişlik ${res.autoW} mm — bölmeler tezgah enine sığmıyor`);
     }
+    res.list.forEach((sec, i) => {
+      if (!sec.auto && sec.type !== "machine" && sec.w < 200) errors.push(`B${i + 1} genişliği en az 200 mm olmalı`);
+    });
     if (p.sink && p.sink.src === "fab") {
       const needL = p.sink.count * p.sink.a + (p.sink.count + 1) * TZ.sinkMargin;
       if (needL > p.L) errors.push(`Evye hazneleri için en az ${needL} mm tezgah eni gerekir`);
@@ -539,30 +560,22 @@
       const sinkText = !p.sink ? "Yok"
         : p.sink.src === "ready" ? `Hazır, ${p.sink.count} × ${fmtMoney(p.sink.price, s.currency)}`
         : `İmalat, ${p.sink.count} × ${p.sink.a}×${p.sink.b}×${p.sink.d} mm`;
+      const secs = resolveSections(p.L, p.sections).list;
       specific = [
-        ["Model", p.model === "dolapli" ? "Dolaplı tezgah" : "Ayaklı tezgah"],
         ["Ölçü (L×W×H)", `${p.L}×${p.W}×${p.H} mm`],
         ["Tabla sacı", `${fmtNum(p.t, 1)} mm`],
         ["Sırt", selText("tz_back")],
         ["Omega destek", `${p.omega.w} mm açınım, ${fmtNum(p.omega.t, 1)} mm`],
+        ["Bölmeler", secs.map((x) => `${sectionLabel(x)} ${x.w}`).join(" | ")],
       ];
-      if (p.model === "dolapli") {
+      if (secs.some((x) => x.type === "open")) {
+        specific.push(["Yalpalık (40×20×1)", [["Ön", p.yal.front], ["Sol", p.yal.left], ["Sağ", p.yal.right]]
+          .filter(([, on]) => on).map(([n]) => n).join(", ") || "Yok"]);
+      }
+      if (secs.some(isClosed)) {
         specific.push(
           ["Mobilya sacı", `${fmtNum(p.bodyT, 1)} mm`],
-          ["Taban rafı", p.bottom ? `${fmtNum(p.bottomT, 1)} mm, yerden ${p.plinth} mm` : "Yok"],
-          ["Kapak", p.door === "none" ? "Kapaksız"
-            : p.door === "hinged" ? `Çarpma, çift cidar 2 × ${fmtNum(p.hingedT, 1)} mm`
-            : `Sürgü, ${fmtNum(p.slidingT, 1)} mm`],
-          ["Ara raf", p.inShelves > 0 ? `${p.inShelves} adet, ${fmtNum(p.shelfT, 1)} mm` : "Yok"],
-          ["Çekmece bloğu", p.block ? `${p.block.count}'lü, ${p.block.width} mm, ${posText(p.block.pos)}` : "Yok"],
-          ["Makine bölümü", p.machine ? `${MACHINE_NAMES[p.machine.type]}, ${posText(p.machine.pos)}` : "Yok"],
-        );
-      } else {
-        specific.push(
-          ["Ayaklar", "4 × 40×40×1.2 mm"],
-          ["Yalpalık (40×20×1)", [["Ön", p.yal.front], ["Sol", p.yal.left], ["Sağ", p.yal.right]]
-            .filter(([, on]) => on).map(([n]) => n).join(", ") || "Yok"],
-          ["Taban rafı", p.shelf === "flat" ? `Var, ${fmtNum(p.lowShelfT, 1)} mm` : "Yok"],
+          ["Ayarlı ayak", `${p.plinth} mm`],
         );
       }
       specific.push(["Evye", sinkText]);
@@ -595,8 +608,9 @@
   // ---------------------------------------------------------
   function compute(s) {
     const density = GRADES[s.grade].density;
-    const notices = [];
-    const parts = calculators[s.furniture](s.params, density, notices);
+    const ctx = { notices: [], counts: {} };
+    const parts = calculators[s.furniture](s.params, density, ctx);
+    const notices = ctx.notices;
 
     const unit = parts.reduce((acc, p) => {
       acc.kg += p.kg;
@@ -614,6 +628,9 @@
     if (sink && sink.src === "ready") {
       extras.push({ name: `Evye ${sink.count} × ${fmtMoney(sink.price, s.currency)}`, amount: sink.count * sink.price * s.qty });
       if (sink.price === 0) notices.push("Hazır evye fiyatı girilmedi.");
+    }
+    if (s.furniture === "tezgah" && ctx.counts.feet && s.params.footPrice > 0) {
+      extras.push({ name: `Ayarlı ayak ${ctx.counts.feet} × ${fmtMoney(s.params.footPrice, s.currency)}`, amount: ctx.counts.feet * s.params.footPrice * s.qty });
     }
     const extra = extras.reduce((a, e) => a + e.amount, 0);
     const total = material + labor + extra;
@@ -648,21 +665,108 @@
     $$("[data-currency-hour]").forEach((el) => { el.textContent = `${cur}/saat`; });
   }
 
-  /** Tezgah yerleşim önizlemesi: blok, makine ve kapak/raf bölgesi oranları */
+  /** Tezgah yerleşim önizlemesi: bölmeler soldan sağa */
   function renderLayout(s) {
     const bar = $("#tzLayout");
-    if (s.furniture !== "tezgah" || s.params.model !== "dolapli" || !Number.isFinite(s.params.L) || s.params.L <= 0) { bar.innerHTML = ""; return; }
-    const p = s.params;
-    const label = {
-      zone: p.door === "none" ? "Açık bölüm" : p.door === "sliding" ? "Sürgü kapaklı" : "Çarpma kapaklı",
-      block: p.block ? `${p.block.count}'lü çekmece` : "",
-      machine: p.machine ? MACHINE_NAMES[p.machine.type] : "",
+    if (s.furniture !== "tezgah" || !Number.isFinite(s.params.L) || s.params.L <= 0) { bar.innerHTML = ""; return; }
+    const res = resolveSections(s.params.L, s.params.sections);
+    const kind = { open: "zone", cabinet: "zone", drawer: "block", machine: "machine" };
+    bar.innerHTML = res.list.filter((x) => x.w > 0).map((x, i) => `<div class="layout-seg seg-${kind[x.type]}${x.type === "open" ? " seg-open" : ""}" style="flex:${x.w} 1 0" title="${sectionLabel(x)} — ${x.w} mm">
+        <span>B${i + 1} ${sectionLabel(x)}</span><small>${x.w} mm${x.auto ? " (kalan)" : ""}</small></div>`).join("");
+    const total = res.list.reduce((a, x) => a + (x.w > 0 ? x.w : 0), 0);
+    const tagEl = $("#tzSectionSum");
+    tagEl.textContent = `${total} / ${s.params.L} mm`;
+    tagEl.classList.toggle("bad", total !== s.params.L);
+    // Sadece kullanılan bölme tiplerinin ayarlarını göster
+    $$("[data-needs]").forEach((el) => {
+      el.hidden = el.dataset.needs === "open" ? !res.list.some((x) => x.type === "open") : !res.list.some(isClosed);
+    });
+  }
+
+  // ---------------------------------------------------------
+  // TEZGAH BÖLME DÜZENLEYİCİSİ
+  // ---------------------------------------------------------
+  let tzSections = DEFAULTS.tz_sections.map((x) => ({ ...newSection(x.type), ...x }));
+
+  function optionList(pairs, current) {
+    return pairs.map(([v, t]) => `<option value="${v}"${String(v) === String(current) ? " selected" : ""}>${t}</option>`).join("");
+  }
+
+  function renderSectionRows() {
+    const box = $("#tzSections");
+    box.innerHTML = tzSections.map((sec, i) => {
+      let extra = "";
+      if (sec.type === "open") {
+        extra = `<label class="mini-check"><input type="checkbox" data-k="shelf"${sec.shelf ? " checked" : ""} /> Taban rafı</label>`;
+      } else if (sec.type === "cabinet") {
+        extra = `<select data-k="door" aria-label="Kapak">${optionList([["hinged", "Çarpma kapak"], ["sliding", "Sürgü kapak"], ["none", "Kapaksız"]], sec.door)}</select>
+          <select data-k="shelves" aria-label="Ara raf">${optionList([[0, "Ara raf yok"], [1, "1 ara raf"], [2, "2 ara raf"]], sec.shelves)}</select>`;
+      } else if (sec.type === "drawer") {
+        extra = `<select data-k="count" aria-label="Çekmece adedi">${optionList([[2, "2 çekmece"], [3, "3 çekmece"], [4, "4 çekmece"], [5, "5 çekmece"]], sec.count)}</select>`;
+      } else {
+        extra = `<select data-k="machine" aria-label="Makine">${optionList([["dish", "Bulaşık makinesi"], ["laundry", "Çamaşır makinesi"]], sec.machine)}</select>`;
+      }
+      const width = sec.type === "machine"
+        ? `<div class="input-group"><input type="number" value="${MACHINE.w}" disabled aria-label="Genişlik" /><span class="addon">mm</span></div>`
+        : `<div class="input-group"><input type="number" data-k="width" min="200" step="10" value="${sec.width}" placeholder="kalan" inputmode="numeric" aria-label="Genişlik" /><span class="addon">mm</span></div>`;
+      return `<div class="sec-row sec-${sec.type}" data-i="${i}">
+        <span class="sec-idx">B${i + 1}</span>
+        <select data-k="type" aria-label="Bölme tipi">${optionList([["open", "Açık (ayaklı)"], ["cabinet", "Dolap"], ["drawer", "Çekmece bloğu"], ["machine", "Makine boşluğu"]], sec.type)}</select>
+        ${width}
+        <div class="sec-extra">${extra}</div>
+        <div class="sec-btns">
+          <button type="button" data-act="left" aria-label="Sola taşı" title="Sola taşı"${i === 0 ? " disabled" : ""}>◀</button>
+          <button type="button" data-act="right" aria-label="Sağa taşı" title="Sağa taşı"${i === tzSections.length - 1 ? " disabled" : ""}>▶</button>
+          <button type="button" data-act="del" aria-label="Sil" title="Sil">✕</button>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  function bindSectionEditor() {
+    const box = $("#tzSections");
+    const onField = (e) => {
+      const k = e.target.dataset.k;
+      const row = e.target.closest(".sec-row");
+      if (!k || !row) return;
+      const sec = tzSections[+row.dataset.i];
+      if (k === "type") {
+        tzSections[+row.dataset.i] = { ...newSection(e.target.value), width: sec.width };
+        if (e.target.value === "machine") ensureMachineHeight();
+        renderSectionRows();
+      } else if (k === "shelf") sec.shelf = e.target.checked;
+      else if (k === "shelves" || k === "count") sec[k] = parseInt(e.target.value, 10);
+      else sec[k] = e.target.value;
     };
-    bar.innerHTML = tezgahZones(p).segments
-      .filter((z) => z.w > 0)
-      .map((z) => `<div class="layout-seg seg-${z.kind}" style="flex:${z.w} 1 0" title="${label[z.kind]} — ${z.w} mm">
-          <span>${label[z.kind]}</span><small>${z.w} mm</small></div>`)
-      .join("");
+    box.addEventListener("input", onField);
+    box.addEventListener("change", onField);
+    box.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-act]");
+      if (!btn) return;
+      const i = +btn.closest(".sec-row").dataset.i;
+      if (btn.dataset.act === "del") tzSections.splice(i, 1);
+      else {
+        const j = btn.dataset.act === "left" ? i - 1 : i + 1;
+        [tzSections[i], tzSections[j]] = [tzSections[j], tzSections[i]];
+      }
+      renderSectionRows();
+      render();
+    });
+    $$("[data-add-section]").forEach((btn) => btn.addEventListener("click", () => {
+      tzSections.push(newSection(btn.dataset.addSection));
+      if (btn.dataset.addSection === "machine") ensureMachineHeight();
+      renderSectionRows();
+      render();
+    }));
+  }
+
+  /** Makine bölmesi eklenince yükseklik 900 mm altındaysa otomatik yükselt */
+  function ensureMachineHeight() {
+    const h = $("#tz_H");
+    if (parseFloat(h.value) < MACHINE.minBenchH) {
+      h.value = MACHINE.minBenchH;
+      toast(`Makine için tezgah yüksekliği ${MACHINE.minBenchH} mm yapıldı`);
+    }
   }
 
   function render() {
@@ -742,11 +846,17 @@
       else if (el.type === "checkbox") data[el.name] = el.checked ? "1" : "0";
       else data[el.name] = el.value;
     });
+    data.tz_sections = tzSections;
     return data;
   }
 
   function applyState(data) {
+    if (Array.isArray(data.tz_sections)) {
+      tzSections = data.tz_sections.map((x) => ({ ...newSection(x.type), ...x }));
+      renderSectionRows();
+    }
     Object.entries(data).forEach(([name, value]) => {
+      if (name === "tz_sections") return;
       const radios = $$(`input[type="radio"][name="${name}"]`, form);
       if (radios.length) {
         radios.forEach((r) => { r.checked = r.value === String(value); });
@@ -873,15 +983,7 @@
       });
     });
 
-    // Makine bölümü açılınca yükseklik 900 mm altındaysa otomatik yükselt
-    $("#tz_machine").addEventListener("change", (e) => {
-      const h = $("#tz_H");
-      if (e.target.checked && parseFloat(h.value) < MACHINE.minBenchH) {
-        h.value = MACHINE.minBenchH;
-        render();
-        toast(`Makine için tezgah yüksekliği ${MACHINE.minBenchH} mm yapıldı`);
-      }
-    });
+    bindSectionEditor();
 
     $("#resetBtn").addEventListener("click", () => {
       applyState(DEFAULTS);
@@ -898,6 +1000,7 @@
   // BAŞLAT
   // ---------------------------------------------------------
   initTheme();
+  renderSectionRows();
   loadState();
   bindEvents();
   render();

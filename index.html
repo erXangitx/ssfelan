@@ -105,18 +105,10 @@
       <section class="card" data-furniture="tezgah">
         <h2 class="card-title"><span class="step">3</span> Tezgah Parametreleri</h2>
 
-        <div class="field model-field">
-          <span class="label">Tezgah Modeli</span>
-          <div class="segmented" role="radiogroup" aria-label="Tezgah modeli">
-            <label><input type="radio" name="tz_model" value="ayakli" checked /><span>Ayaklı (Profil Ayak)</span></label>
-            <label><input type="radio" name="tz_model" value="dolapli" /><span>Dolaplı (Mobilya Sacı)</span></label>
-          </div>
-        </div>
-
         <div class="grid g-3">
           <div class="field">
             <label for="tz_L">En (L)</label>
-            <div class="input-group"><input id="tz_L" name="tz_L" type="number" min="300" max="2400" step="10" value="1500" inputmode="numeric" /><span class="addon">mm</span></div>
+            <div class="input-group"><input id="tz_L" name="tz_L" type="number" min="300" max="2400" step="10" value="1200" inputmode="numeric" /><span class="addon">mm</span></div>
           </div>
           <div class="field">
             <label for="tz_W">Derinlik (W)</label>
@@ -166,10 +158,24 @@
         </div>
         <p class="note">Omega adedi boya göre: 800 mm altı → 1 &nbsp;·&nbsp; 800–1300 → 2 &nbsp;·&nbsp; 1300–2000 → 3 &nbsp;·&nbsp; 2000–2400 → 4.</p>
 
-        <!-- ===== Ayaklı model ===== -->
-        <div data-when="tz_model=ayakli">
-          <h3 class="group-title">Ayak, Yalpalık &amp; Alt Raf</h3>
-          <span class="label sub-label">Yalpalık — 40×20×1 mm profil (arka hariç; duvara gelen tarafı kaldırın)</span>
+        <h3 class="group-title">Alt Bölmeler <small>(önden, soldan sağa)</small></h3>
+        <div id="tzSections" class="sections"></div>
+        <div class="section-actions">
+          <span class="label">Bölme ekle:</span>
+          <button type="button" class="btn btn-secondary btn-sm" data-add-section="open">+ Açık</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-add-section="cabinet">+ Dolap</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-add-section="drawer">+ Çekmece</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-add-section="machine">+ Makine</button>
+        </div>
+        <div class="layout-preview" aria-label="Tezgah yerleşimi (önden görünüş)">
+          <span class="label">Yerleşim <span id="tzSectionSum" class="sum-tag"></span></span>
+          <div class="layout-bar" id="tzLayout"></div>
+        </div>
+        <p class="note">Genişliği boş bırakılan bölme kalan ölçüyü alır. Açık bölmenin kapalı bölmeye (dolap/çekmece) bakan tarafında profil ayak ve yalpalık olmaz; kapalı bölmenin yan sacı taşır. Yan yana iki kapalı bölme arasında tek sac vardır.</p>
+
+        <div data-needs="open">
+          <h3 class="group-title">Açık Bölme Ayarları</h3>
+          <span class="label sub-label">Yalpalık — 40×20×1 mm profil (arka yok; duvara gelen yanı kaldırın)</span>
           <div class="chips" role="group" aria-label="Tezgah yalpalık kenarları">
             <label class="chip"><input type="checkbox" id="tz_yalFront" name="tz_yalFront" checked /><span>Ön</span></label>
             <label class="chip"><input type="checkbox" id="tz_yalLeft" name="tz_yalLeft" checked /><span>Sol</span></label>
@@ -177,14 +183,7 @@
           </div>
           <div class="grid g-2">
             <div class="field">
-              <label for="tz_shelf">Alt (Taban) Raf</label>
-              <select id="tz_shelf" name="tz_shelf">
-                <option value="none" selected>Yok</option>
-                <option value="flat">Var — Düz Sac</option>
-              </select>
-            </div>
-            <div class="field" data-when="tz_shelf=flat">
-              <label for="tz_lowShelfT">Taban Rafı Sacı</label>
+              <label for="tz_lowShelfT">Taban Rafı Sacı (açık bölme)</label>
               <select id="tz_lowShelfT" name="tz_lowShelfT">
                 <option value="0.8">0.8 mm</option>
                 <option value="1.0" selected>1.0 mm</option>
@@ -192,12 +191,11 @@
               </select>
             </div>
           </div>
-          <p class="note">4 köşede aşağı inen 40×40×1.2 mm kutu profil ayak.</p>
+          <p class="note">Ayak: 40×40×1.2 mm kutu profil, yere kadar.</p>
         </div>
 
-        <!-- ===== Dolaplı model ===== -->
-        <div data-when="tz_model=dolapli">
-          <h3 class="group-title">Dolap Gövdesi</h3>
+        <div data-needs="closed">
+          <h3 class="group-title">Kapalı Bölme Ayarları <small>(dolap / çekmece)</small></h3>
           <div class="grid g-2">
             <div class="field">
               <label for="tz_bodyT">Mobilya Sacı (Yan + Arka)</label>
@@ -208,17 +206,6 @@
               </select>
             </div>
             <div class="field">
-              <label for="tz_plinth">Taban Yerden Yüksekliği</label>
-              <div class="input-group"><input id="tz_plinth" name="tz_plinth" type="number" min="0" max="250" step="5" value="100" inputmode="numeric" /><span class="addon">mm</span></div>
-            </div>
-            <div class="field">
-              <label for="tz_bottom">Taban Rafı</label>
-              <select id="tz_bottom" name="tz_bottom">
-                <option value="1" selected>Var</option>
-                <option value="0">Yok</option>
-              </select>
-            </div>
-            <div class="field" data-when="tz_bottom=1">
               <label for="tz_bottomT">Taban Rafı Sacı</label>
               <select id="tz_bottomT" name="tz_bottomT">
                 <option value="0.8">0.8 mm</option>
@@ -227,21 +214,13 @@
               </select>
             </div>
             <div class="field">
-              <label for="tz_door">Kapak Tipi</label>
-              <select id="tz_door" name="tz_door">
-                <option value="hinged" selected>Çarpma Kapak (çift cidar)</option>
-                <option value="sliding">Sürgü Kapak</option>
-                <option value="none">Kapaksız (Açık Dolap)</option>
-              </select>
-            </div>
-            <div class="field" data-when="tz_door=hinged">
-              <label for="tz_hingedT">Çift Cidar Sacı</label>
+              <label for="tz_hingedT">Çarpma Kapak (Çift Cidar)</label>
               <select id="tz_hingedT" name="tz_hingedT">
                 <option value="0.8" selected>2 × 0.8 mm</option>
                 <option value="1.0">2 × 1.0 mm</option>
               </select>
             </div>
-            <div class="field" data-when="tz_door=sliding">
+            <div class="field">
               <label for="tz_slidingT">Sürgü Kapak Sacı</label>
               <select id="tz_slidingT" name="tz_slidingT">
                 <option value="0.8">0.8 mm</option>
@@ -250,14 +229,6 @@
               </select>
             </div>
             <div class="field">
-              <label for="tz_inShelves">Ara Raf</label>
-              <select id="tz_inShelves" name="tz_inShelves">
-                <option value="0">Yok (ara rafsız)</option>
-                <option value="1" selected>1 adet</option>
-                <option value="2">2 adet</option>
-              </select>
-            </div>
-            <div class="field" data-when="tz_inShelves!=0">
               <label for="tz_shelfT">Ara Raf Sacı</label>
               <select id="tz_shelfT" name="tz_shelfT">
                 <option value="0.8" selected>0.8 mm</option>
@@ -265,71 +236,20 @@
                 <option value="1.2">1.2 mm</option>
               </select>
             </div>
-          </div>
-
-          <h3 class="group-title">Ek Bölümler</h3>
-
-          <!-- Çekmece bloğu -->
-          <div class="option-block">
-            <label class="switch-row">
-              <input type="checkbox" id="tz_block" name="tz_block" />
-              <span class="switch" aria-hidden="true"></span>
-              <span class="switch-text">Çekmece Bloğu <small>Genelde 3'lü — bu genişlik kapak/raf bölgesinden düşülür</small></span>
-            </label>
-            <div class="grid g-3 option-body" data-when="tz_block=1">
-              <div class="field">
-                <label for="tz_blockW">Blok Genişliği</label>
-                <div class="input-group"><input id="tz_blockW" name="tz_blockW" type="number" min="300" max="900" step="10" value="450" inputmode="numeric" /><span class="addon">mm</span></div>
-              </div>
-              <div class="field">
-                <label for="tz_blockN">Çekmece Adedi</label>
-                <div class="stepper">
-                  <button type="button" data-step="-1" data-target="tz_blockN" aria-label="Azalt">−</button>
-                  <input id="tz_blockN" name="tz_blockN" type="number" min="1" max="6" step="1" value="3" inputmode="numeric" />
-                  <button type="button" data-step="1" data-target="tz_blockN" aria-label="Arttır">+</button>
-                </div>
-              </div>
-              <div class="field">
-                <label for="tz_blockPos">Konum</label>
-                <select id="tz_blockPos" name="tz_blockPos">
-                  <option value="right">Sağda</option>
-                  <option value="left">Solda</option>
-                </select>
+            <div class="field">
+              <label for="tz_plinth">Ayarlı Ayak Yüksekliği</label>
+              <div class="input-group"><input id="tz_plinth" name="tz_plinth" type="number" min="50" max="250" step="5" value="150" inputmode="numeric" /><span class="addon">mm</span></div>
+            </div>
+            <div class="field span-2">
+              <label for="tz_footPrice">Ayarlı Ayak Birim Fiyatı (hazır ürün)</label>
+              <div class="input-group">
+                <input id="tz_footPrice" name="tz_footPrice" type="number" min="0" step="0.01" value="0" inputmode="decimal" />
+                <span class="addon" data-currency-code>USD</span>
               </div>
             </div>
           </div>
-
-          <!-- Makine bölümü -->
-          <div class="option-block">
-            <label class="switch-row">
-              <input type="checkbox" id="tz_machine" name="tz_machine" />
-              <span class="switch" aria-hidden="true"></span>
-              <span class="switch-text">Bulaşık / Çamaşır Makinesi Bölümü <small>600×700×820 mm boşluk — tezgah yüksekliği en az 900 mm</small></span>
-            </label>
-            <div class="grid g-2 option-body" data-when="tz_machine=1">
-              <div class="field">
-                <label for="tz_machineType">Makine</label>
-                <select id="tz_machineType" name="tz_machineType">
-                  <option value="dish">Bulaşık Makinesi</option>
-                  <option value="laundry">Çamaşır Makinesi</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="tz_machinePos">Konum</label>
-                <select id="tz_machinePos" name="tz_machinePos">
-                  <option value="left">Solda</option>
-                  <option value="right">Sağda</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="layout-preview" aria-label="Tezgah yerleşimi (önden görünüş)">
-            <span class="label">Yerleşim (önden, soldan sağa)</span>
-            <div class="layout-bar" id="tzLayout"></div>
-          </div>
+          <p class="note">Kapalı bölmenin her yan sacına 2 ayarlı ayak gelir; her ayak için 90 mm 40×40×1.2 profil parça kullanılır. Çekmeceler tamamen 0.8 mm.</p>
         </div>
-
         <h3 class="group-title">Evye</h3>
         <!-- Evye -->
         <div class="option-block">

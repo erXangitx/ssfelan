@@ -28,16 +28,18 @@ canlı **ağırlık ve maliyet** hesaplayan, bağımlılıksız bir web uygulama
 
 ## Opsiyonlar
 
-- **Çalışma tezgahı** — iki model, ortak üst tabla + sırt + omega destek + evye:
-  - *Omega adedi* (tabla ve taban rafı altı, boya göre): <800 mm → 1, 800–1300 → 2,
-    1300–2000 → 3, sonrası her 700 mm için +1.
-  - *Ayaklı:* 4 köşede 40×40×1.2 profil ayak; 40×20×1 yalpalık ön/sol/sağ (tek tıkla);
+- **Çalışma tezgahı** — ortak: üst tabla + sırt + tabla altı omega + evye. Altı soldan sağa
+  **bölmelerden** oluşur (genişliği boş bırakılan bölme kalanı alır):
+  - *Açık:* 40×40×1.2 profil ayak, 40×20×1 yalpalık (ön + dış yanlar, arka yok),
     opsiyonel 1.0 mm taban rafı + omega.
-  - *Dolaplı:* profil ayak yok; yan + arka mobilya sacı (0.8 mm), 1.0 mm taban rafı + omega,
-    çarpma kapak çift cidar (2 × 0.8 mm) veya sürgü kapak (1.0 mm), ara raflı/rafsız
-    (ara raf altı omega: ≤700 mm → 1, ≤1500 mm → 2), çekmece bloğu (tamamı 0.8 mm)
-    ve makine bölümü. En fazla 2400 mm.
-  - Evye: hazır evye birim fiyatı (ayrı maliyet satırı) veya imalat hazne ağırlığı.
+  - *Dolap:* çarpma (çift cidar 2 × 0.8) / sürgü (1.0) / kapaksız, 0–2 ara raf (0.8 + omega).
+  - *Çekmece:* 2–5 çekmece, tamamı 0.8 mm.
+  - *Makine:* 600 mm boşluk (bulaşık/çamaşır); tezgah yüksekliği en az 900 mm.
+  - Kurallar: açık bölmenin kapalı bölmeye bakan tarafında profil ayak ve yalpalık yok;
+    iki kapalı bölme arasında tek ortak yan sac; kapalı bölmeler 150 mm ayarlı ayak üzerinde
+    (her yan saca 2 ayak, ayak başına 90 mm 40×40×1.2 profil). Ayarlı ayak fiyatı hazır ürün.
+  - Omega adedi (tabla / taban rafı): <800 → 1, 800–1300 → 2, 1300–2000 → 3, 2000–2400 → 4;
+    dolap ara rafı altı: ≤700 → 1, ≤1500 → 2.
 - **Duvar dolabı:** ara raf (yok/1–3), Ø8 dolu mil yalpalık (ara raflar ve/veya taban, 1–2 sıra).
 - **İstif rafı:** her katta 40×20×1 mm profil yalpalık (deniz bağı) — ön/arka/sol/sağ tek tıkla.
 

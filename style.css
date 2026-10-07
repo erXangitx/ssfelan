@@ -738,3 +738,61 @@ input[type="range"]::-moz-range-thumb {
 
 .model-field { margin-bottom: 16px; }
 .sub-label { display: block; margin: 2px 0 8px; font-size: 12.5px; font-weight: 600; color: var(--text); }
+
+/* =========================================================
+   Tezgah bölme düzenleyicisi
+   ========================================================= */
+.sections { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.sec-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 130px auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.sec-row.sec-drawer { border-left-color: var(--labor); }
+.sec-row.sec-machine { border-left-color: var(--warn); }
+.sec-row.sec-open { border-left-color: var(--muted); }
+.sec-row select,
+.sec-row input[type="number"] { height: 38px; background: var(--surface); }
+.sec-row input[type="number"] { -moz-appearance: textfield; padding: 0 8px; }
+.sec-row input[type="number"]::-webkit-inner-spin-button { display: none; }
+.sec-row .input-group .addon { padding: 0 8px; }
+.sec-idx { font-weight: 700; font-size: 13px; color: var(--muted); min-width: 24px; }
+.sec-extra { display: flex; gap: 8px; min-width: 0; grid-column: 2 / 4; grid-row: 2; }
+.sec-extra:empty { display: none; }
+.sec-extra select { flex: 1; min-width: 0; }
+.mini-check { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.mini-check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.sec-btns { display: flex; gap: 4px; }
+.sec-btns button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+}
+.sec-btns button:hover:not(:disabled) { color: var(--text); border-color: var(--accent); }
+.sec-btns button[data-act="del"]:hover { color: var(--warn); border-color: var(--warn); }
+.sec-btns button:disabled { opacity: .35; cursor: default; }
+
+.section-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+.section-actions .label { font-size: 12.5px; color: var(--muted); }
+.btn-sm { height: 34px; padding: 0 12px; font-size: 13px; }
+
+.sum-tag { margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); font-weight: 600; }
+.sum-tag.bad { color: var(--warn); border-color: var(--warn); }
+.seg-open { background: color-mix(in srgb, var(--muted) 14%, transparent); color: var(--text); }
+
+@media (max-width: 600px) {
+  .sec-row { grid-template-columns: auto minmax(0, 1fr) 110px; }
+  .sec-extra { grid-column: 1 / -1; }
+  .sec-btns { grid-column: 1 / -1; grid-row: 3; justify-content: flex-end; }
+}
