@@ -321,8 +321,13 @@
       const parts = [];
 
       // ===== Ortak: üst tabla, sırt, omega destek, evye =====
-      parts.push(sheetPart("Üst tabla", `${L}×${W} + ${TZ.edgeFlange} mm etek`,
-        flangedArea(L, W, TZ.edgeFlange), t, density));
+      // Etek (40 mm) yalnızca sırtın olmadığı kenarlarda; sırt olan kenarda sırt açınımı kullanılır
+      const eF = TZ.edgeFlange;
+      const eB = back > 0 ? 0 : eF;
+      const eL = p.backL ? 0 : eF;
+      const eR = p.backR ? 0 : eF;
+      parts.push(sheetPart("Üst tabla", `${L}×${W} + ${TZ.edgeFlange} mm etek (sırtsız kenarlar)`,
+        (L + eL + eR) * (W + eF + eB) / 1e6, t, density));
 
       if (back > 0) {
         parts.push(sheetPart(`Sırt (H ${back})`, `${L}×${back + TZ.backReturn} açınım`,

@@ -25,7 +25,7 @@ model kartı, ölçüler, sırt/yan sırt, çevre profili, taban rafı, dolap ar
 Yeni sabit değerli alan eklerken `data-adv` ver.
 
 ## Çalışma tezgahı (şu an odak; bölme sistemi)
-- Üst: üst tabla (etek büküm) + sırt (60/100 mm) + **omega** (tabla altı, derinlik yönünde).
+- Üst: üst tabla (40 mm etek; sırt olan kenarda etek yok, sırt açınımı kullanılır — çift sayım yok) + sırt (60/100 mm) + **omega** (tabla altı, derinlik yönünde).
   Omega adedi boya göre: <800→1, 800–1300→2, 1300–2000→3, 2000–2400→4. **Tezgah en fazla 2400 mm.**
 - Alt kısım **soldan sağa bölmeler**: Açık / Dolap / Çekmece / Makine. Genişliği boş bölme kalanı alır.
   Üstte **hazır model kartları** (altı boş, taban raflı, dolap çarpma/sürgü, çekmece+açık, çekmece+dolap,
