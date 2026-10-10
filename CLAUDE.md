@@ -18,6 +18,12 @@ deneme/soru yapma, tahmin ettiğin ölçüyü koda gömme (ekranda değiştirile
 - Profil kg = boy(m) × kg/m (kesitten hesaplanır). 40×40×1.2 kutu ≈ 1.477 kg/m (304).
 - Özet panelinde **Ağırlık Özeti**: sac (kalınlığa göre) ve profil (kesite göre) ayrı kg; altında parça dökümü.
 
+## Arayüz ilkesi
+Kullanıcı çok seçenekten bunalıyor: **her işte değişmeyen ayarlar "Gelişmiş ayarlar" tikinin arkasında**
+(`data-adv` özniteliği; `body.show-adv` sınıfı). Ana ekranda yalnızca iş başına değişenler görünür:
+model kartı, ölçüler, sırt/yan sırt, çevre profili, taban rafı, dolap ara rafı, evye, fiyat/işçilik.
+Yeni sabit değerli alan eklerken `data-adv` ver.
+
 ## Çalışma tezgahı (şu an odak; bölme sistemi)
 - Üst: üst tabla (etek büküm) + sırt (60/100 mm) + **omega** (tabla altı, derinlik yönünde).
   Omega adedi boya göre: <800→1, 800–1300→2, 1300–2000→3, 2000–2400→4. **Tezgah en fazla 2400 mm.**

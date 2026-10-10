@@ -73,7 +73,7 @@
 
   const DEFAULTS = {
     furniture: "tezgah", grade: "304", qty: 1, price: 4.2, currency: "USD",
-    calcMode: "labor", kgSalePrice: 9, laborHours: 8, laborRate: 10,
+    showAdv: "0", calcMode: "labor", kgSalePrice: 9, laborHours: 8, laborRate: 10,
     tz_L: 1200, tz_W: 700, tz_H: 900, tz_t: "1.2", tz_back: "100", tz_backL: "0", tz_backR: "0",
     tz_shelfOmega: "1", tz_rod: "1",
     tz_omegaW: 120, tz_omegaT: "1.2",
@@ -693,6 +693,7 @@
    *  data-when: "alan=değer", "alan!=değer"; "|" ile VEYA bağlanabilir. */
   function syncVisibility() {
     const furniture = getRadio("furniture");
+    document.body.classList.toggle("show-adv", chk("showAdv"));
     $$("[data-furniture]").forEach((el) => { el.hidden = el.dataset.furniture !== furniture; });
 
     $$("[data-when]").forEach((el) => {
@@ -726,13 +727,13 @@
     updateTemplateActive();
     const cabs = res.list.filter((x) => x.type === "cabinet");
     const shelfVals = [...new Set(cabs.map((x) => x.shelves))];
-    $("#cabShelfField").hidden = cabs.length === 0;
     $("#tz_cabShelves").value = shelfVals.length === 1 ? String(shelfVals[0]) : "mixed";
     const opens = res.list.filter((x) => x.type === "open");
     $("#tz_openShelf").checked = opens.length > 0 && opens.every((x) => x.shelf);
     // Sadece kullanılan bölme tiplerinin ayarlarını göster
     $$("[data-needs]").forEach((el) => {
-      el.hidden = el.dataset.needs === "open" ? !res.list.some((x) => x.type === "open") : !res.list.some(isClosed);
+      const need = el.dataset.needs;
+      el.hidden = !res.list.some((x) => (need === "open" ? x.type === "open" : need === "cabinet" ? x.type === "cabinet" : isClosed(x)));
     });
   }
 

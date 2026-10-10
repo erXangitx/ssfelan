@@ -858,3 +858,7 @@ details.editor > .note { margin-bottom: 10px; }
   .templates { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mode-row .segmented { min-width: 0; width: 100%; }
 }
+
+/* Gelişmiş ayarlar: kapalıyken sabit değerli alanlar gizlenir */
+body:not(.show-adv) [data-adv] { display: none !important; }
+.adv-switch { margin-bottom: 14px; }
