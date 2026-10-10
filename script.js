@@ -80,7 +80,7 @@
     tz_sections: [{ type: "drawer", width: "450", count: 3 }, { type: "open", width: "" }],
     tz_yalFront: "0", tz_yalBack: "1", tz_yalLeft: "1", tz_yalRight: "1", tz_lowShelfT: "1.0",
     tz_bodyT: "0.8", tz_bottomT: "1.0", tz_hingedT: "0.8", tz_slidingT: "1.0", tz_shelfT: "0.8",
-    tz_plinth: 150, tz_footPrice: 0,
+    tz_plinth: 150, tz_cabRecess: 80, tz_footPrice: 0,
     tz_sink: "0", tz_sinkSrc: "ready", tz_sinkPrice: 0, tz_sinkA: 500, tz_sinkB: 400, tz_sinkD: 250, tz_sinkN: "1", tz_sinkT: "1.2",
     dl_L: 1200, dl_H: 650, dl_D: 350, dl_t: "1.0", dl_door: "sliding", dl_shelves: "1",
     dl_railShelf: "0", dl_railBase: "0", dl_railRows: "1",
@@ -187,6 +187,7 @@
   /** Bölmelere göre alt yapı parçaları */
   function tezgahSections(p, density, ctx) {
     const { W, H, yal } = p;
+    const cabD = W - p.cabRecess; // dolap derinliği: tabla derinliği − (ön + arka geri çekme)
     const secs = resolveSections(p.L, p.sections).list;
     const parts = [];
     const pf = TZ.panelFlange;
@@ -229,8 +230,8 @@
     }
 
     if (closedPanels) {
-      parts.push(sheetPart(`Kapalı bölme yan sacları (${closedPanels} adet)`, `${closedPanels} × ${W}×${sideH}`,
-        closedPanels * flangedArea(W, sideH, pf), p.bodyT, density));
+      parts.push(sheetPart(`Kapalı bölme yan sacları (${closedPanels} adet)`, `${closedPanels} × ${cabD}×${sideH}`,
+        closedPanels * flangedArea(cabD, sideH, pf), p.bodyT, density));
       const feet = closedPanels * 2;
       parts.push(profilePart(`Ayarlı ayak profilleri (${feet} adet)`, `${BOX_PROFILE.label} · ${feet}×${TZ.footProfile}`,
         feet * TZ.footProfile, boxKgM, BOX_PROFILE.label));
@@ -262,14 +263,14 @@
 
       // Kapalı bölme: arka sac + taban rafı (+ omega)
       parts.push(sheetPart(`${t} · arka sac`, `${w}×${sideH}`, flangedArea(w, sideH, pf), p.bodyT, density));
-      parts.push(sheetPart(`${t} · taban rafı`, `${w}×${W - 20}`, flangedArea(w, W - 20, pf), p.bottomT, density));
-      parts.push(omegaPart(`${t} · taban omega`, w, W - 40, p.omega, density));
+      parts.push(sheetPart(`${t} · taban rafı`, `${w}×${cabD - 20}`, flangedArea(w, cabD - 20, pf), p.bottomT, density));
+      parts.push(omegaPart(`${t} · taban omega`, w, cabD - 40, p.omega, density));
 
       if (sec.type === "cabinet") {
         if (sec.shelves > 0) {
-          parts.push(sheetPart(`${t} · ara raf (${sec.shelves} adet)`, `${sec.shelves} × ${w - 10}×${W - 60}`,
-            sec.shelves * flangedArea(w - 10, W - 60, TZ.shelfFlange), p.shelfT, density));
-          const om = omegaPart(`${t} · ara raf omega`, w - 10, W - 60, p.omega, density,
+          parts.push(sheetPart(`${t} · ara raf (${sec.shelves} adet)`, `${sec.shelves} × ${w - 10}×${cabD - 60}`,
+            sec.shelves * flangedArea(w - 10, cabD - 60, TZ.shelfFlange), p.shelfT, density));
+          const om = omegaPart(`${t} · ara raf omega`, w - 10, cabD - 60, p.omega, density,
             p.shelfOmega > 0 ? () => p.shelfOmega : shelfOmegaCount);
           if (sec.shelves > 1) {
             om.name = om.name.replace(/\((\d+) adet\)/, (_, n) => `(${sec.shelves} raf × ${n} adet)`);
@@ -504,7 +505,7 @@
         lowShelfT: parseFloat(val("tz_lowShelfT")),
         bodyT: parseFloat(val("tz_bodyT")), bottomT: parseFloat(val("tz_bottomT")),
         hingedT: parseFloat(val("tz_hingedT")), slidingT: parseFloat(val("tz_slidingT")), shelfT: parseFloat(val("tz_shelfT")),
-        plinth: num("tz_plinth"), footPrice: Math.max(0, num("tz_footPrice") || 0),
+        plinth: num("tz_plinth"), cabRecess: num("tz_cabRecess"), footPrice: Math.max(0, num("tz_footPrice") || 0),
         sink: chk("tz_sink")
           ? {
             src: val("tz_sinkSrc"), count: int("tz_sinkN"), price: Math.max(0, num("tz_sinkPrice") || 0),
@@ -513,7 +514,7 @@
           : null,
       };
       s.dims = ["tz_L", "tz_W", "tz_H", "tz_omegaW"];
-      if (s.params.sections.some(isClosed)) s.dims.push("tz_plinth");
+      if (s.params.sections.some(isClosed)) s.dims.push("tz_plinth", "tz_cabRecess");
       if (s.params.sink && s.params.sink.src === "fab") s.dims.push("tz_sinkA", "tz_sinkB", "tz_sinkD");
       s.title = `${s.params.L} × ${s.params.W} × ${s.params.H} mm`;
     } else if (furniture === "dolap") {

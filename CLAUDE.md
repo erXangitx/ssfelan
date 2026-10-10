@@ -37,6 +37,7 @@ Yeni sabit değerli alan eklerken `data-adv` ver.
   1.0 mm + omega. 150 mm **ayarlı ayak** (her yan saca 2 adet; ayak başına 90 mm 40×40×1.2 profil;
   ayarlı ayak fiyatı hazır ürün). Açık bölmenin kapalıya bakan tarafında profil ayak/çevre profili yok;
   kapalı bölmenin yan sacı taşır. Yan yana iki kapalı bölme arasında **tek ortak yan sac**.
+- **Dolap derinliği = tabla derinliği − 80 mm** (ön 40 + arka 40 geri çekme; gerçek çizimden: tabla 750 → dolap 670). Ayarlanabilir (`tz_cabRecess`).
 - **Dolap:** çarpma kapak = **çift cidar 2×0.8 mm**; sürgü kapak **1.0 mm**; ara raf 0–2 (0.8 mm,
   altına omega: seçilebilir 1/2).
 - **Dolap ara raf omega:** kullanıcı "genelde 1, en fazla 2" dedi → seçilebilir (1 / 2 / otomatik: ≤700→1, üstü 2).
