@@ -796,3 +796,65 @@ input[type="range"]::-moz-range-thumb {
   .sec-extra { grid-column: 1 / -1; }
   .sec-btns { grid-column: 1 / -1; grid-row: 3; justify-content: flex-end; }
 }
+
+/* =========================================================
+   Hesap yöntemi, şablon kartları, ağırlık özeti
+   ========================================================= */
+.mode-card { padding: 14px 16px; }
+.mode-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.mode-title { font-weight: 700; font-size: 15px; }
+.mode-row .segmented { min-width: 260px; }
+.mode-hint { margin: 8px 0 0; font-size: 12.5px; color: var(--muted); }
+
+.tpl-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.tpl-head .label { font-size: 12.5px; font-weight: 500; color: var(--muted); }
+.tpl-head small { font-weight: 400; }
+.templates { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+.tpl {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+  transition: all .2s;
+}
+.tpl:hover { color: var(--text); border-color: color-mix(in srgb, var(--accent) 50%, var(--border)); }
+.tpl.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-2));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.tpl-bar { display: flex; gap: 2px; height: 22px; }
+.tpl-bar i { border-radius: 3px; min-width: 0; }
+.mini-open { background: color-mix(in srgb, var(--muted) 35%, transparent); border: 1px dashed var(--muted); }
+.mini-open.shelf { background: color-mix(in srgb, var(--muted) 35%, transparent); border-style: solid; }
+.mini-cabinet { background: color-mix(in srgb, var(--accent) 45%, transparent); }
+.mini-drawer { background: color-mix(in srgb, var(--labor) 50%, transparent); }
+.mini-machine { background: repeating-linear-gradient(135deg, transparent 0 4px, color-mix(in srgb, var(--warn) 45%, transparent) 4px 8px); border: 1px dashed var(--warn); }
+.tpl-name { font-size: 12.5px; font-weight: 600; text-align: center; line-height: 1.25; }
+
+details.editor { margin: 4px 0 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); }
+details.editor > summary { padding: 10px 12px; font-size: 13.5px; font-weight: 600; cursor: pointer; color: var(--muted); }
+details.editor[open] > summary { color: var(--text); border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+details.editor > :not(summary) { margin-left: 10px; margin-right: 10px; }
+details.editor > .note { margin-bottom: 10px; }
+.quick-shelf { margin-bottom: 14px; }
+
+.wsum { border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; font-size: 13px; }
+.ws-row { display: grid; grid-template-columns: 1fr 70px 80px; gap: 8px; padding: 7px 10px; border-bottom: 1px solid var(--border); }
+.ws-row:last-child { border-bottom: 0; }
+.ws-row span:nth-child(n+2) { text-align: right; font-family: "JetBrains Mono", ui-monospace, monospace; }
+.ws-head { background: var(--surface-2); color: var(--muted); font-size: 11.5px; font-weight: 700; letter-spacing: .05em; }
+.ws-sub { font-weight: 600; background: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+.ws-total { font-weight: 700; color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface-2)); }
+
+@media (max-width: 600px) {
+  .templates { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mode-row .segmented { min-width: 0; width: 100%; }
+}

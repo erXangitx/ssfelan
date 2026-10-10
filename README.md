@@ -7,6 +7,8 @@ canlı **ağırlık ve maliyet** hesaplayan, bağımlılıksız bir web uygulama
 
 `index.html` dosyasını tarayıcıda açmanız yeterlidir (sunucu gerekmez).
 
+Kuralların ve kararların tam listesi: `CLAUDE.md` (projeye devam eden Claude oturumları bunu otomatik okur).
+
 ## Dosyalar
 
 | Dosya        | İçerik |
