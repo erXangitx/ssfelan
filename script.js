@@ -43,8 +43,8 @@
     edgeFlange: 40,    // üst tabla ön/yan etek büküm payı
     backReturn: 20,    // sırt üst dönüş büküm payı
     legInset: 80,      // ayaklar arası çerçeve için iç mesafe (2 × profil)
-    shelfFlange: 30,   // alt raf kenar büküm
-    panelFlange: 20,   // gövde panelleri büküm payı
+    shelfFlange: 40,   // raf kenar büküm
+    panelFlange: 40,   // gövde panelleri (mobilya) yan büküm payı
     doorFlange: 25,    // kapak kenar büküm payı
     innerFlange: 15,   // çift cidar kapak iç sacı büküm payı
     drawerT: 0.8,
@@ -279,7 +279,7 @@
         }
         if (p.rod) {
           const rods = sec.shelves + 1; // ara raflar + taban rafı
-          const rodLen = w - 20;
+          const rodLen = w - 2 * TZ.panelFlange; // 40 + 40 mm büküm payı
           parts.push(profilePart(`${t} · Ø8 çubuk (${rods} adet)`, `${RAIL_ROD.label} · ${rods}×${rodLen}`,
             rods * rodLen, rodKgPerM(RAIL_ROD, density), RAIL_ROD.label));
         }
@@ -333,7 +333,8 @@
       parts.push(omegaPart("Tabla altı omega", L, W - 20, p.omega, density));
 
       // Yan sırt: duvara gelen sol/sağ taraf
-      [["Sol", p.backL], ["Sağ", p.backR]].forEach(([name, h]) => {
+      [["Sol", p.backL], ["Sağ", p.backR]].forEach(([name, on]) => {
+        const h = on ? (back > 0 ? back : 100) : 0; // yan sırt yüksekliği = normal sırt
         if (h > 0) {
           parts.push(sheetPart(`${name} yan sırt (H ${h})`, `${W}×${h + TZ.backReturn} açınım`,
             mm2ToM2(W, h + TZ.backReturn), t, density));
@@ -490,7 +491,7 @@
     if (furniture === "tezgah") {
       s.params = {
         L: num("tz_L"), W: num("tz_W"), H: num("tz_H"),
-        t: parseFloat(val("tz_t")), back: int("tz_back"), backL: int("tz_backL"), backR: int("tz_backR"),
+        t: parseFloat(val("tz_t")), back: int("tz_back"), backL: val("tz_backL") === "1", backR: val("tz_backR") === "1",
         shelfOmega: parseInt(val("tz_shelfOmega"), 10) || 0, rod: val("tz_rod") === "1",
         omega: { w: num("tz_omegaW"), t: parseFloat(val("tz_omegaT")) },
         sections: tzSections.map((x) => ({ ...newSection(x.type), ...x })),
@@ -589,8 +590,8 @@
         ["Ölçü (L×W×H)", `${p.L}×${p.W}×${p.H} mm`],
         ["Tabla sacı", `${fmtNum(p.t, 1)} mm`],
         ["Sırt", selText("tz_back")],
-        ...(p.backL > 0 ? [["Sol yan sırt", `H ${p.backL} mm`]] : []),
-        ...(p.backR > 0 ? [["Sağ yan sırt", `H ${p.backR} mm`]] : []),
+        ...(p.backL ? [["Sol yan sırt", `H ${p.back > 0 ? p.back : 100} mm`]] : []),
+        ...(p.backR ? [["Sağ yan sırt", `H ${p.back > 0 ? p.back : 100} mm`]] : []),
         ["Omega destek", `${p.omega.w} mm açınım, ${fmtNum(p.omega.t, 1)} mm`],
         ["Bölmeler", secs.map((x) => `${sectionLabel(x)} ${x.w}`).join(" | ")],
       ];

@@ -34,8 +34,9 @@ deneme/soru yapma, tahmin ettiğin ölçüyü koda gömme (ekranda değiştirile
 - **Dolap:** çarpma kapak = **çift cidar 2×0.8 mm**; sürgü kapak **1.0 mm**; ara raf 0–2 (0.8 mm,
   altına omega: seçilebilir 1/2).
 - **Dolap ara raf omega:** kullanıcı "genelde 1, en fazla 2" dedi → seçilebilir (1 / 2 / otomatik: ≤700→1, üstü 2).
-  **Ø8 dolu mil çubuk:** dolapta ara raf + taban rafı üstüne boydan boya (adet = ara raf + 1), seçilebilir (varsayılan var).
-- **Yan sırt:** tezgahın sol/sağ yanı duvara geliyorsa seçilir (yok / H60 / H100; uzunluk = tabla derinliği).
+  **Ø8 dolu mil çubuk:** dolapta ara raf + taban rafı üstüne boydan boya (adet = ara raf + 1, boy = dolap genişliği − 80 mm), kapaklı/kapaksız fark etmeden hepsinde; seçilebilir (varsayılan var). **Açık bölmenin taban rafına Ø8 çubuk KOYULMAZ** (ürün rahat girsin); orada önden arkaya giden profil (yalpalık) vardır.
+- **Yan sırt:** tezgahın sol/sağ yanı duvara geliyorsa seçilir (yok / var; yükseklik = normal sırt yüksekliği; uzunluk = tabla derinliği).
+- Mobilya yan büküm payı **40 mm** (`TZ.panelFlange`, `TZ.shelfFlange`).
 - **Çekmece:** 2–5 adet, kutu + çift cidar ön, **tamamı 0.8 mm**.
 - **Makine boşluğu:** 600×700×820 mm; tezgah yüksekliği en az 900 (otomatik yükselir); dış yanına sac.
 - **Evye:** hazır evye (adet + birim fiyat → hazır ürün) veya imalat hazne (sacdan). Tabla kesiği ağırlıktan DÜŞÜLMEZ.
