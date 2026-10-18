@@ -77,6 +77,12 @@ Yalpalık (deniz bağı) 40×20×1: Ön/Arka/Sol/Sağ tek tıkla (varsayılan ö
 Omega açınımı 120 mm / 1.2 mm sac; büküm payları (`TZ`, `DL`, `RF` sabitleri `script.js` başında);
 makine dış yan sacı 0.8 mm; çekmece önü çift cidar; varsayılan işçilik 8 saat × 10 USD ve kg fiyatları.
 
+## Bekleyen konu: tabla ve ara raf büküm geometrisi (kullanıcı çizim/görsel gönderecek)
+Kullanıcının anlattığı (henüz kodlanmadı, yorum belirsiz): tabla kenarı serbest uçtan 10-20-40-40 + kalan derinlik
+(muhtemelen kapalı kutu kenar, ~110 mm açınım/kenar; şu an 40 mm sayılıyor); ara rafta kapak payı için ~20 mm içeride,
+ön kenarda 30-35 mm büküm + altında 10 mm mukavemet bükümü, yanlarda 40 mm. Ara raf sacı 0.8 mm (`tz_shelfT`).
+Görselle doğrulanana kadar kodlama; gerçek düz kesim (açınım) ölçüleri iste: tabla 1500×650 sırt 100, ara raf 600×500.
+
 ## Kullanıcıdan beklenen sonraki adımlar
 Hazır model listesinin gerçek satış modellerine göre netleştirilmesi; duvar dolabı ve istif rafı için
 aynı bölme/şablon mantığının uygulanması (kullanıcı şimdilik sadece çalışma tezgahına odaklanmak istiyor).
