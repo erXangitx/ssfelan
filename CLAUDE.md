@@ -31,11 +31,11 @@ Mobilde altta sabit sonuç çubuğu (kg + fiyat) var.
 ## Çalışma tezgahı (şu an odak; bölme sistemi)
 - Üst: üst tabla (40 mm etek; sırt olan kenarda etek yok, sırt açınımı kullanılır — çift sayım yok) + sırt (60/100 mm) + **omega** (tabla altı, derinlik yönünde).
   **Omega boydan boya** (uzunluk yönünde, firma çizimlerindeki gibi): tabla altı uzunluk = L − 80, adet seçilebilir
-  (varsayılan 2, Gelişmiş ayarlar); raf altı (taban + ara raf) omega da boydan boya, adet 1/2 (varsayılan 1). **Tezgah en fazla 2400 mm.**
+  (varsayılan 1 — boydan boya tek omega yeter; Gelişmiş ayarlar); raf altı (taban + ara raf) omega da boydan boya, adet 1/2 (varsayılan 1). **Tezgah en fazla 2400 mm.**
 - Alt kısım **soldan sağa bölmeler**: Açık / Dolap / Çekmece / Makine. Genişliği boş bölme kalanı alır.
   Üstte **hazır model kartları** (altı boş, taban raflı, dolap çarpma/sürgü, çekmece+açık, çekmece+dolap,
   makine+açık, makine+dolap) + **⇄ ters çevir**; "Detaylı düzenle" ile elle bölme kurulur.
-- **Açık bölme:** 40×40×1.2 profil ayak yere kadar. Çevre profili 40×20×1 (yalpalık): kenar bazlı
+- **Açık bölme:** 40×40×1.2 profil ayak yere kadar. Yan/arka profil **40×40** (ayakların kaymaması için; istif rafında yalpalık 40×20×1 kalır): kenar bazlı
   seçilir (Ön/Arka/Sol/Sağ); varsayılan **arka + sol + sağ** (ön yok; duvara gelen yan kaldırılır).
   Opsiyonel taban rafı **1.0 mm** + altına omega (bölme bazlı veya "hepsine" hızlı anahtar).
 - **Kapalı bölme (dolap/çekmece):** profil ayak YOK. Mobilya sacı **0.8 mm** (yan + arka), taban rafı

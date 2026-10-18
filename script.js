@@ -76,7 +76,7 @@
     showAdv: "0", calcMode: "labor", kgSalePrice: 9, laborHours: 8, laborRate: 10,
     tz_L: 1200, tz_W: 700, tz_H: 900, tz_t: "1.2", tz_backB: "1", tz_backH: "100", tz_backL: "0", tz_backR: "0",
     tz_shelfOmega: "1", tz_rod: "1",
-    tz_omegaW: 120, tz_omegaT: "1.2", tz_omegaN: "2", tz_profT: "1.2",
+    tz_omegaW: 120, tz_omegaT: "1.2", tz_omegaN: "1", tz_profT: "1.2",
     tz_sections: [{ type: "drawer", width: "450", count: 3 }, { type: "open", width: "" }],
     tz_yalFront: "0", tz_yalBack: "1", tz_yalLeft: "1", tz_yalRight: "1", tz_lowShelfT: "1.0",
     tz_bodyT: "0.8", tz_bottomT: "1.0", tz_hingedT: "0.8", tz_slidingT: "1.0", tz_shelfT: "0.8",
@@ -88,7 +88,7 @@
     rf_yalFront: "1", rf_yalBack: "0", rf_yalLeft: "1", rf_yalRight: "1",
   };
 
-  const STORAGE_KEY = "ss-furniture-calc:v12";
+  const STORAGE_KEY = "ss-furniture-calc:v13";
 
   // ---------------------------------------------------------
   // 2) TEMEL HESAP FONKSİYONLARI
@@ -217,8 +217,8 @@
     if (yal.right && last && last.type === "open") rails.push(["Sağ", sideLen]);
     if (rails.length) {
       const names = [...new Set(rails.map(([n]) => n))].join(", ");
-      parts.push(profilePart(`Çevre profili — ${names}`, `${YAL_PROFILE.label} · ${rails.map(([, l]) => l).join(" + ")}`,
-        rails.reduce((acc, [, l]) => acc + l, 0), boxKgPerM(YAL_PROFILE, density), YAL_PROFILE.label));
+      parts.push(profilePart(`Çevre profili — ${names}`, `${BOX_PROFILE.label} · ${rails.map(([, l]) => l).join(" + ")}`,
+        rails.reduce((acc, [, l]) => acc + l, 0), boxKgM, BOX_PROFILE.label));
     }
 
     if (closedPanels) {
@@ -591,7 +591,7 @@
         ["Bölmeler", secs.map((x) => `${sectionLabel(x)} ${x.w}`).join(" | ")],
       ];
       if (secs.some((x) => x.type === "open")) {
-        specific.push(["Çevre profili (40×20×1)", [["Ön", p.yal.front], ["Arka", p.yal.back], ["Sol", p.yal.left], ["Sağ", p.yal.right]]
+        specific.push(["Yan/arka profil (40×40)", [["Ön", p.yal.front], ["Arka", p.yal.back], ["Sol", p.yal.left], ["Sağ", p.yal.right]]
           .filter(([, on]) => on).map(([n]) => n).join(", ") || "Yok"]);
       }
       if (secs.some(isClosed)) {
