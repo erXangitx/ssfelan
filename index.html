@@ -29,22 +29,9 @@
     <!-- ============ SOL: PARAMETRELER ============ -->
     <form id="calcForm" class="panel form-panel" autocomplete="off" novalidate>
 
-      <!-- Hesap yöntemi -->
-      <section class="card mode-card">
-        <div class="mode-row">
-          <span class="mode-title">Fiyat Hesabı</span>
-          <div class="segmented" role="radiogroup" aria-label="Fiyat hesaplama yöntemi">
-            <label><input type="radio" name="calcMode" value="labor" checked /><span>İşçilik bazlı</span></label>
-            <label><input type="radio" name="calcMode" value="kg" /><span>Kg bazlı</span></label>
-          </div>
-        </div>
-        <p class="mode-hint" data-when="calcMode=labor">Fiyat = ağırlık × malzeme kg fiyatı + işçilik saati × saat ücreti</p>
-        <p class="mode-hint" data-when="calcMode=kg">Fiyat = ağırlık × satış kg fiyatı (işçilik dahil) — çok adetli işler için</p>
-      </section>
-
-      <!-- Mobilya tipi -->
+      <!-- ============ 1: MOBİLYA TİPİ ============ -->
       <section class="card">
-        <h2 class="card-title"><span class="step">1</span> Mobilya Tipi</h2>
+        <h2 class="card-title"><span class="step"></span> Ne üretiyorsunuz?</h2>
         <div class="type-tabs" role="radiogroup" aria-label="Mobilya tipi">
           <label class="type-tab">
             <input type="radio" name="furniture" value="tezgah" checked />
@@ -70,170 +57,69 @@
         </div>
       </section>
 
-      <!-- Genel ayarlar -->
-      <section class="card">
-        <h2 class="card-title"><span class="step">2</span> Malzeme &amp; Fiyat</h2>
-        <div class="grid g-3">
-          <div class="field">
-            <label for="grade">Malzeme Kalitesi</label>
-            <select id="grade" name="grade">
-              <option value="304">AISI 304 — 7.93</option>
-              <option value="316L">AISI 316L — 7.98</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="qty">Ürün Adedi</label>
-            <input id="qty" name="qty" type="number" min="1" step="1" value="1" inputmode="numeric" />
-          </div>
-          <div class="field">
-            <label for="currency">Para Birimi</label>
-            <select id="currency" name="currency">
-              <option value="USD">USD $</option>
-              <option value="EUR">EUR €</option>
-              <option value="TRY">TRY ₺</option>
-            </select>
-          </div>
-        </div>
-
-        <div data-when="calcMode=labor">
-          <div class="field">
-            <label for="price">Paslanmaz Kg Fiyatı (malzeme)</label>
-            <div class="input-group">
-              <input id="price" name="price" type="number" min="0" step="0.01" value="4.20" inputmode="decimal" />
-              <span class="addon" data-currency-suffix>USD/kg</span>
-            </div>
-          </div>
-
-          <h3 class="group-title">İşçilik</h3>
-          <div class="grid g-2">
-            <div class="field">
-              <label for="laborHours">İşçilik Saati (1 adet için)</label>
-              <div class="input-group"><input id="laborHours" name="laborHours" type="number" min="0" step="0.5" value="8" inputmode="decimal" /><span class="addon">saat</span></div>
-            </div>
-            <div class="field">
-              <label for="laborRate">İşçilik Saat Ücreti</label>
-              <div class="input-group">
-                <input id="laborRate" name="laborRate" type="number" min="0" step="0.01" value="10" inputmode="decimal" />
-                <span class="addon" data-currency-hour>USD/saat</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field" data-when="calcMode=kg">
-          <label for="kgSalePrice">Satış Kg Fiyatı (işçilik dahil)</label>
-          <div class="input-group">
-            <input id="kgSalePrice" name="kgSalePrice" type="number" min="0" step="0.01" value="9.00" inputmode="decimal" />
-            <span class="addon" data-currency-suffix>USD/kg</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============ TEZGAH ============ -->
+      <!-- ============ 2: TEZGAH MODEL VE ÖLÇÜ ============ -->
       <section class="card" data-furniture="tezgah">
-        <h2 class="card-title"><span class="step">3</span> Tezgah Parametreleri</h2>
-        <label class="switch-row adv-switch">
-          <input type="checkbox" id="showAdv" name="showAdv" />
-          <span class="switch" aria-hidden="true"></span>
-          <span class="switch-text">Gelişmiş ayarlar <small>Sac kalınlıkları, omega, ayarlı ayak, Ø8 çubuk… Kapalıyken varsayılan değerler kullanılır</small></span>
-        </label>
+        <h2 class="card-title"><span class="step"></span> Model ve ölçü</h2>
 
         <div class="tpl-head">
-          <span class="label">Hazır Model <small>(tek tıkla kur, sonra ayarla)</small></span>
-          <button type="button" id="tzFlip" class="btn btn-secondary btn-sm" title="Bölmelerin sırasını sağdan sola çevirir">⇄ Ters çevir</button>
+          <span class="label">Hazır model seçin <small>(tek tıkla kurulur)</small></span>
+          <button type="button" id="tzFlip" class="btn btn-secondary btn-sm" title="Bölmelerin yerini sağdan sola çevirir">⇄ Ters çevir</button>
         </div>
         <div id="tzTemplates" class="templates" role="group" aria-label="Hazır tezgah modelleri"></div>
 
         <div class="grid g-3">
           <div class="field">
-            <label for="tz_L">En (L)</label>
+            <label for="tz_L">En</label>
             <div class="input-group"><input id="tz_L" name="tz_L" type="number" min="300" max="2400" step="10" value="1200" inputmode="numeric" /><span class="addon">mm</span></div>
           </div>
           <div class="field">
-            <label for="tz_W">Derinlik (W)</label>
+            <label for="tz_W">Derinlik</label>
             <div class="input-group"><input id="tz_W" name="tz_W" type="number" min="300" max="1500" step="10" value="700" inputmode="numeric" /><span class="addon">mm</span></div>
           </div>
           <div class="field">
-            <label for="tz_H">Yükseklik (H)</label>
+            <label for="tz_H">Yükseklik</label>
             <div class="input-group"><input id="tz_H" name="tz_H" type="number" min="500" max="1200" step="10" value="900" inputmode="numeric" /><span class="addon">mm</span></div>
           </div>
         </div>
 
-        <h3 class="group-title">Üst Tabla</h3>
-        <div class="grid g-2">
-          <div class="field" data-adv>
-            <label for="tz_t">Tabla Sac Kalınlığı</label>
-            <select id="tz_t" name="tz_t">
-              <option value="1.0">1.0 mm</option>
-              <option value="1.2" selected>1.2 mm</option>
-              <option value="1.5">1.5 mm</option>
-              <option value="2.0">2.0 mm</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="tz_back">Sırt (Arka Büküm)</label>
-            <select id="tz_back" name="tz_back">
-              <option value="0">Yok</option>
-              <option value="60">Var — H 60 mm</option>
-              <option value="100" selected>Var — H 100 mm</option>
-            </select>
-          </div>
-        </div>
-        <div class="grid g-2">
-          <div class="field">
-            <label for="tz_backL">Sol Yan Sırt</label>
-            <select id="tz_backL" name="tz_backL">
-              <option value="0" selected>Yok</option>
-              <option value="1">Var (sırt yüksekliği kadar)</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="tz_backR">Sağ Yan Sırt</label>
-            <select id="tz_backR" name="tz_backR">
-              <option value="0" selected>Yok</option>
-              <option value="1">Var (sırt yüksekliği kadar)</option>
-            </select>
-          </div>
-        </div>
-        <span class="label sub-label" data-adv>Omega destek — üst tabla ve taban rafı altına</span>
-        <div class="grid g-2" data-adv>
-          <div class="field">
-            <label for="tz_omegaW">Omega Açınımı</label>
-            <div class="input-group"><input id="tz_omegaW" name="tz_omegaW" type="number" min="40" max="400" step="5" value="120" inputmode="numeric" /><span class="addon">mm</span></div>
-          </div>
-          <div class="field">
-            <label for="tz_omegaT">Omega Sacı</label>
-            <select id="tz_omegaT" name="tz_omegaT">
-              <option value="0.8">0.8 mm</option>
-              <option value="1.0">1.0 mm</option>
-              <option value="1.2" selected>1.2 mm</option>
-              <option value="1.5">1.5 mm</option>
-            </select>
-          </div>
-        </div>
-        <p class="note" data-adv>Omega adedi boya göre: 800 mm altı → 1 &nbsp;·&nbsp; 800–1300 → 2 &nbsp;·&nbsp; 1300–2000 → 3 &nbsp;·&nbsp; 2000–2400 → 4.</p>
-
-        <div class="layout-preview" aria-label="Tezgah yerleşimi (önden görünüş)">
-          <span class="label">Alt Bölmeler <small>(önden, soldan sağa)</small> <span id="tzSectionSum" class="sum-tag"></span></span>
+        <div class="layout-preview" aria-label="Tezgah altı yerleşimi (önden görünüş)">
+          <span class="label">Tezgah altı <small>(önden, soldan sağa)</small> <span id="tzSectionSum" class="sum-tag"></span></span>
           <div class="layout-bar" id="tzLayout"></div>
         </div>
 
         <details class="editor">
-          <summary>Detaylı düzenle (bölme ekle / çıkar / genişlik)</summary>
-        <div id="tzSections" class="sections"></div>
-        <div class="section-actions">
-          <span class="label">Bölme ekle:</span>
-          <button type="button" class="btn btn-secondary btn-sm" data-add-section="open">+ Açık</button>
-          <button type="button" class="btn btn-secondary btn-sm" data-add-section="cabinet">+ Dolap</button>
-          <button type="button" class="btn btn-secondary btn-sm" data-add-section="drawer">+ Çekmece</button>
-          <button type="button" class="btn btn-secondary btn-sm" data-add-section="machine">+ Makine</button>
-        </div>
-        <p class="note">Genişliği boş bırakılan bölme kalan ölçüyü alır. Açık bölmenin kapalı bölmeye (dolap/çekmece) bakan tarafında profil ayak ve yalpalık olmaz; kapalı bölmenin yan sacı taşır. Yan yana iki kapalı bölme arasında tek sac vardır.</p>
+          <summary>Özel düzen kur (bölme ekle / çıkar / genişlik)</summary>
+          <div id="tzSections" class="sections"></div>
+          <div class="section-actions">
+            <span class="label">Bölme ekle:</span>
+            <button type="button" class="btn btn-secondary btn-sm" data-add-section="open">+ Açık</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-add-section="cabinet">+ Dolap</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-add-section="drawer">+ Çekmece</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-add-section="machine">+ Makine</button>
+          </div>
+          <p class="note">Genişliği boş bırakılan bölme kalan ölçüyü alır.</p>
         </details>
+      </section>
 
-        <div data-needs="open">
-          <h3 class="group-title">Açık Bölme Ayarları</h3>
-          <span class="label sub-label">Çevre profili — 40×20×1 mm (yan + arka; duvara gelen tarafı kaldırın)</span>
+      <!-- ============ 3: TEZGAH SEÇENEKLER ============ -->
+      <section class="card" data-furniture="tezgah">
+        <h2 class="card-title"><span class="step"></span> Seçenekler</h2>
+
+        <div class="opt-group">
+          <span class="opt-title">Sırt <small>— duvara dayanan kenarlar</small></span>
+          <div class="chips" role="group" aria-label="Sırt kenarları">
+            <label class="chip"><input type="checkbox" id="tz_backB" name="tz_backB" checked /><span>Arka</span></label>
+            <label class="chip"><input type="checkbox" id="tz_backL" name="tz_backL" /><span>Sol</span></label>
+            <label class="chip"><input type="checkbox" id="tz_backR" name="tz_backR" /><span>Sağ</span></label>
+            <select id="tz_backH" name="tz_backH" class="chip-select" aria-label="Sırt yüksekliği">
+              <option value="60">60 mm</option>
+              <option value="100" selected>100 mm</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="opt-group" data-needs="open">
+          <span class="opt-title">Açık bölme <small>— yan/arka profil (40×20×1). Duvar veya buzdolabı tarafını kapatın</small></span>
           <div class="chips" role="group" aria-label="Tezgah çevre profili kenarları">
             <label class="chip"><input type="checkbox" id="tz_yalFront" name="tz_yalFront" /><span>Ön</span></label>
             <label class="chip"><input type="checkbox" id="tz_yalBack" name="tz_yalBack" checked /><span>Arka</span></label>
@@ -243,122 +129,33 @@
           <label class="switch-row quick-shelf">
             <input type="checkbox" id="tz_openShelf" />
             <span class="switch" aria-hidden="true"></span>
-            <span class="switch-text">Açık bölmelerde taban rafı <small>Ürün koymak için; bölme bazında ayarı "Detaylı düzenle"de</small></span>
+            <span class="switch-text">Altında raf olsun <small>Ürün koymak için taban rafı</small></span>
           </label>
-          <div class="grid g-2" data-adv>
-            <div class="field">
-              <label for="tz_lowShelfT">Taban Rafı Sacı (açık bölme)</label>
-              <select id="tz_lowShelfT" name="tz_lowShelfT">
-                <option value="0.8">0.8 mm</option>
-                <option value="1.0" selected>1.0 mm</option>
-                <option value="1.2">1.2 mm</option>
-              </select>
-            </div>
-          </div>
-          <p class="note" data-adv>Ayak: 40×40×1.2 mm kutu profil, yere kadar.</p>
         </div>
 
-        <div data-needs="cabinet">
-          <div class="grid g-2">
-            <div class="field" id="cabShelfField">
-              <label for="tz_cabShelves">Dolaplarda Ara Raf</label>
-              <select id="tz_cabShelves">
-                <option value="0">Yok (ara rafsız)</option>
-                <option value="1">1 adet</option>
-                <option value="2">2 adet</option>
-                <option value="mixed" disabled>Karışık (bölme bazlı)</option>
-              </select>
-            </div>
+        <div class="opt-group" data-needs="cabinet">
+          <span class="opt-title">Dolap</span>
+          <div class="field" id="cabShelfField">
+            <label for="tz_cabShelves">Ara raf</label>
+            <select id="tz_cabShelves">
+              <option value="0">Yok</option>
+              <option value="1">1 adet</option>
+              <option value="2">2 adet</option>
+              <option value="mixed" disabled>Karışık (bölme bazlı)</option>
+            </select>
           </div>
         </div>
 
-        <div data-needs="closed" data-adv>
-          <h3 class="group-title">Kapalı Bölme Ayarları <small>(dolap / çekmece)</small></h3>
-          <div class="grid g-2">
-            <div class="field" data-adv>
-              <label for="tz_bodyT">Mobilya Sacı (Yan + Arka)</label>
-              <select id="tz_bodyT" name="tz_bodyT">
-                <option value="0.6">0.6 mm</option>
-                <option value="0.8" selected>0.8 mm</option>
-                <option value="1.0">1.0 mm</option>
-              </select>
-            </div>
-            <div class="field" data-adv>
-              <label for="tz_bottomT">Taban Rafı Sacı</label>
-              <select id="tz_bottomT" name="tz_bottomT">
-                <option value="0.8">0.8 mm</option>
-                <option value="1.0" selected>1.0 mm</option>
-                <option value="1.2">1.2 mm</option>
-              </select>
-            </div>
-            <div class="field" data-adv>
-              <label for="tz_hingedT">Çarpma Kapak (Çift Cidar)</label>
-              <select id="tz_hingedT" name="tz_hingedT">
-                <option value="0.8" selected>2 × 0.8 mm</option>
-                <option value="1.0">2 × 1.0 mm</option>
-              </select>
-            </div>
-            <div class="field" data-adv>
-              <label for="tz_slidingT">Sürgü Kapak Sacı</label>
-              <select id="tz_slidingT" name="tz_slidingT">
-                <option value="0.8">0.8 mm</option>
-                <option value="1.0" selected>1.0 mm</option>
-                <option value="1.2">1.2 mm</option>
-              </select>
-            </div>
-            <div class="field" data-adv>
-              <label for="tz_shelfT">Ara Raf Sacı</label>
-              <select id="tz_shelfT" name="tz_shelfT">
-                <option value="0.8" selected>0.8 mm</option>
-                <option value="1.0">1.0 mm</option>
-                <option value="1.2">1.2 mm</option>
-              </select>
-            </div>
-            <div class="field" data-adv>
-              <label for="tz_plinth">Ayarlı Ayak Yüksekliği</label>
-              <div class="input-group"><input id="tz_plinth" name="tz_plinth" type="number" min="50" max="250" step="5" value="150" inputmode="numeric" /><span class="addon">mm</span></div>
-            </div>
-            <div class="field" data-adv>
-              <label for="tz_shelfOmega">Ara Raf Omega Adedi</label>
-              <select id="tz_shelfOmega" name="tz_shelfOmega">
-                <option value="1" selected>1 adet (genelde)</option>
-                <option value="2">2 adet (en fazla)</option>
-                <option value="auto">Otomatik (700 mm üstü 2)</option>
-              </select>
-            </div>
-            <div class="field span-2" data-adv>
-              <label for="tz_rod">Ø8 Çubuk (ara raf + taban rafı üstü, boydan boya)</label>
-              <select id="tz_rod" name="tz_rod">
-                <option value="1" selected>Var</option>
-                <option value="0">Yok</option>
-              </select>
-            </div>
-            <div class="field" data-adv>
-              <label for="tz_cabRecess">Dolap Geri Çekme (ön + arka)</label>
-              <div class="input-group"><input id="tz_cabRecess" name="tz_cabRecess" type="number" min="0" max="200" step="5" value="80" inputmode="numeric" /><span class="addon">mm</span></div>
-            </div>
-            <div class="field span-2" data-adv>
-              <label for="tz_footPrice">Ayarlı Ayak Birim Fiyatı (hazır ürün)</label>
-              <div class="input-group">
-                <input id="tz_footPrice" name="tz_footPrice" type="number" min="0" step="0.01" value="0" inputmode="decimal" />
-                <span class="addon" data-currency-code>USD</span>
-              </div>
-            </div>
-          </div>
-          <p class="note" data-adv>Kapalı bölmenin her yan sacına 2 ayarlı ayak gelir; her ayak için 90 mm 40×40×1.2 profil parça kullanılır. Çekmeceler tamamen 0.8 mm.</p>
-        </div>
-        <h3 class="group-title">Evye</h3>
-        <!-- Evye -->
-        <div class="option-block">
+        <div class="opt-group">
           <label class="switch-row">
             <input type="checkbox" id="tz_sink" name="tz_sink" />
             <span class="switch" aria-hidden="true"></span>
-            <span class="switch-text">Evye <small>Hazır evye fiyatı veya imalat hazne ağırlığı eklenir</small></span>
+            <span class="switch-text">Evye var <small>Hazır evye fiyatı veya imalat hazne</small></span>
           </label>
           <div class="option-body" data-when="tz_sink=1">
             <div class="grid g-2">
               <div class="field">
-                <label for="tz_sinkSrc">Evye Tipi</label>
+                <label for="tz_sinkSrc">Evye tipi</label>
                 <select id="tz_sinkSrc" name="tz_sinkSrc">
                   <option value="ready" selected>Hazır evye (fiyat girilir)</option>
                   <option value="fab">İmalat hazne (sacdan hesaplanır)</option>
@@ -373,7 +170,7 @@
                 </select>
               </div>
               <div class="field span-2" data-when="tz_sinkSrc=ready">
-                <label for="tz_sinkPrice">Evye Birim Fiyatı</label>
+                <label for="tz_sinkPrice">Evye birim fiyatı</label>
                 <div class="input-group">
                   <input id="tz_sinkPrice" name="tz_sinkPrice" type="number" min="0" step="0.01" value="0" inputmode="decimal" />
                   <span class="addon" data-currency-code>USD</span>
@@ -383,21 +180,21 @@
             <div data-when="tz_sinkSrc=fab">
               <div class="grid g-3">
                 <div class="field">
-                  <label for="tz_sinkA">Hazne En</label>
+                  <label for="tz_sinkA">Hazne en</label>
                   <div class="input-group"><input id="tz_sinkA" name="tz_sinkA" type="number" min="200" max="1200" step="10" value="500" inputmode="numeric" /><span class="addon">mm</span></div>
                 </div>
                 <div class="field">
-                  <label for="tz_sinkB">Hazne Boy</label>
+                  <label for="tz_sinkB">Hazne boy</label>
                   <div class="input-group"><input id="tz_sinkB" name="tz_sinkB" type="number" min="200" max="700" step="10" value="400" inputmode="numeric" /><span class="addon">mm</span></div>
                 </div>
                 <div class="field">
-                  <label for="tz_sinkD">Hazne Derinliği</label>
+                  <label for="tz_sinkD">Derinlik</label>
                   <div class="input-group"><input id="tz_sinkD" name="tz_sinkD" type="number" min="100" max="450" step="10" value="250" inputmode="numeric" /><span class="addon">mm</span></div>
                 </div>
               </div>
               <div class="grid g-2">
                 <div class="field">
-                  <label for="tz_sinkT">Hazne Sac Kalınlığı</label>
+                  <label for="tz_sinkT">Hazne sac kalınlığı</label>
                   <select id="tz_sinkT" name="tz_sinkT">
                     <option value="1.0">1.0 mm</option>
                     <option value="1.2" selected>1.2 mm</option>
@@ -408,11 +205,132 @@
             </div>
           </div>
         </div>
+
+        <label class="switch-row adv-switch">
+          <input type="checkbox" id="showAdv" name="showAdv" />
+          <span class="switch" aria-hidden="true"></span>
+          <span class="switch-text">Daha fazla ayar <small>Sac kalınlıkları, omega, ayarlı ayak, Ø8 çubuk… Kapalıyken hazır değerler kullanılır</small></span>
+        </label>
+
+        <div class="adv-box" data-adv>
+          <div class="grid g-3">
+            <div class="field">
+              <label for="tz_t">Tabla sacı</label>
+              <select id="tz_t" name="tz_t">
+                <option value="1.0">1.0 mm</option>
+                <option value="1.2" selected>1.2 mm</option>
+                <option value="1.5">1.5 mm</option>
+                <option value="2.0">2.0 mm</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="tz_omegaW">Omega açınımı</label>
+              <div class="input-group"><input id="tz_omegaW" name="tz_omegaW" type="number" min="40" max="400" step="5" value="120" inputmode="numeric" /><span class="addon">mm</span></div>
+            </div>
+            <div class="field">
+              <label for="tz_omegaT">Omega sacı</label>
+              <select id="tz_omegaT" name="tz_omegaT">
+                <option value="0.8">0.8 mm</option>
+                <option value="1.0">1.0 mm</option>
+                <option value="1.2" selected>1.2 mm</option>
+                <option value="1.5">1.5 mm</option>
+              </select>
+            </div>
+          </div>
+          <p class="note">Omega adedi boya göre: 800 altı → 1 · 800–1300 → 2 · 1300–2000 → 3 · 2000–2400 → 4.</p>
+
+          <div data-needs="open">
+            <div class="grid g-2">
+              <div class="field">
+                <label for="tz_lowShelfT">Açık bölme taban rafı sacı</label>
+                <select id="tz_lowShelfT" name="tz_lowShelfT">
+                  <option value="0.8">0.8 mm</option>
+                  <option value="1.0" selected>1.0 mm</option>
+                  <option value="1.2">1.2 mm</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div data-needs="closed">
+            <div class="grid g-2">
+              <div class="field">
+                <label for="tz_bodyT">Mobilya sacı (yan + arka)</label>
+                <select id="tz_bodyT" name="tz_bodyT">
+                  <option value="0.6">0.6 mm</option>
+                  <option value="0.8" selected>0.8 mm</option>
+                  <option value="1.0">1.0 mm</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="tz_bottomT">Taban rafı sacı</label>
+                <select id="tz_bottomT" name="tz_bottomT">
+                  <option value="0.8">0.8 mm</option>
+                  <option value="1.0" selected>1.0 mm</option>
+                  <option value="1.2">1.2 mm</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="tz_hingedT">Çarpma kapak (çift cidar)</label>
+                <select id="tz_hingedT" name="tz_hingedT">
+                  <option value="0.8" selected>2 × 0.8 mm</option>
+                  <option value="1.0">2 × 1.0 mm</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="tz_slidingT">Sürgü kapak sacı</label>
+                <select id="tz_slidingT" name="tz_slidingT">
+                  <option value="0.8">0.8 mm</option>
+                  <option value="1.0" selected>1.0 mm</option>
+                  <option value="1.2">1.2 mm</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="tz_shelfT">Ara raf sacı</label>
+                <select id="tz_shelfT" name="tz_shelfT">
+                  <option value="0.8" selected>0.8 mm</option>
+                  <option value="1.0">1.0 mm</option>
+                  <option value="1.2">1.2 mm</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="tz_shelfOmega">Ara raf omega adedi</label>
+                <select id="tz_shelfOmega" name="tz_shelfOmega">
+                  <option value="1" selected>1 adet (genelde)</option>
+                  <option value="2">2 adet (en fazla)</option>
+                  <option value="auto">Otomatik (700 mm üstü 2)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="tz_plinth">Ayarlı ayak yüksekliği</label>
+                <div class="input-group"><input id="tz_plinth" name="tz_plinth" type="number" min="50" max="250" step="5" value="150" inputmode="numeric" /><span class="addon">mm</span></div>
+              </div>
+              <div class="field">
+                <label for="tz_cabRecess">Dolap geri çekme (ön + arka)</label>
+                <div class="input-group"><input id="tz_cabRecess" name="tz_cabRecess" type="number" min="0" max="200" step="5" value="80" inputmode="numeric" /><span class="addon">mm</span></div>
+              </div>
+              <div class="field">
+                <label for="tz_rod">Ø8 çubuk (ara raf + taban rafı)</label>
+                <select id="tz_rod" name="tz_rod">
+                  <option value="1" selected>Var</option>
+                  <option value="0">Yok</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="tz_footPrice">Ayarlı ayak birim fiyatı</label>
+                <div class="input-group">
+                  <input id="tz_footPrice" name="tz_footPrice" type="number" min="0" step="0.01" value="0" inputmode="decimal" />
+                  <span class="addon" data-currency-code>USD</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ============ DUVAR DOLABI ============ -->
       <section class="card" data-furniture="dolap" hidden>
-        <h2 class="card-title"><span class="step">3</span> Duvar Dolabı Parametreleri</h2>
+        <h2 class="card-title"><span class="step"></span> Ölçü ve seçenekler</h2>
         <div class="grid g-3">
           <div class="field">
             <label for="dl_L">En (L)</label>
@@ -480,7 +398,7 @@
 
       <!-- ============ İSTİF RAFI ============ -->
       <section class="card" data-furniture="raf" hidden>
-        <h2 class="card-title"><span class="step">3</span> İstif Rafı Parametreleri</h2>
+        <h2 class="card-title"><span class="step"></span> Ölçü ve seçenekler</h2>
         <div class="grid g-3">
           <div class="field">
             <label for="rf_L">En (L)</label>
@@ -532,11 +450,81 @@
         <p class="note">Dikmeler: 40×40×1.2 mm kutu profil — 4 dikme + her katta boy/en köprüleri. Yalpalık kenarlarını tek tıkla açıp kapatabilirsiniz.</p>
       </section>
 
-      <button type="button" id="resetBtn" class="btn btn-ghost">Varsayılanlara Dön</button>
+      <!-- ============ 4: FİYAT ============ -->
+      <section class="card">
+        <h2 class="card-title"><span class="step"></span> Fiyat</h2>
+        <div class="grid g-3">
+          <div class="field">
+            <label for="grade">Kalite</label>
+            <select id="grade" name="grade">
+              <option value="304">AISI 304</option>
+              <option value="316L">AISI 316L</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="qty">Adet</label>
+            <input id="qty" name="qty" type="number" min="1" step="1" value="1" inputmode="numeric" />
+          </div>
+          <div class="field">
+            <label for="currency">Para birimi</label>
+            <select id="currency" name="currency">
+              <option value="USD">USD $</option>
+              <option value="EUR">EUR €</option>
+              <option value="TRY">TRY ₺</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="label">Nasıl hesaplansın?</span>
+          <div class="segmented" role="radiogroup" aria-label="Fiyat hesaplama yöntemi">
+            <label><input type="radio" name="calcMode" value="labor" checked /><span>İşçilik bazlı</span></label>
+            <label><input type="radio" name="calcMode" value="kg" /><span>Kg bazlı</span></label>
+          </div>
+        </div>
+
+        <div data-when="calcMode=labor">
+          <p class="mode-hint">Malzeme (kg × kg fiyatı) + işçilik (saat × saat ücreti)</p>
+          <div class="grid g-3">
+            <div class="field">
+              <label for="price">Malzeme kg fiyatı</label>
+              <div class="input-group">
+                <input id="price" name="price" type="number" min="0" step="0.01" value="4.20" inputmode="decimal" />
+                <span class="addon" data-currency-suffix>USD/kg</span>
+              </div>
+            </div>
+            <div class="field">
+              <label for="laborHours">İşçilik saati (1 adet)</label>
+              <div class="input-group"><input id="laborHours" name="laborHours" type="number" min="0" step="0.5" value="8" inputmode="decimal" /><span class="addon">saat</span></div>
+            </div>
+            <div class="field">
+              <label for="laborRate">Saat ücreti</label>
+              <div class="input-group">
+                <input id="laborRate" name="laborRate" type="number" min="0" step="0.01" value="10" inputmode="decimal" />
+                <span class="addon" data-currency-hour>USD/saat</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div data-when="calcMode=kg">
+          <p class="mode-hint">Ağırlık × satış kg fiyatı (işçilik dahil) — çok adetli işler için</p>
+          <div class="field">
+            <label for="kgSalePrice">Satış kg fiyatı</label>
+            <div class="input-group">
+              <input id="kgSalePrice" name="kgSalePrice" type="number" min="0" step="0.01" value="9.00" inputmode="decimal" />
+              <span class="addon" data-currency-suffix>USD/kg</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <button type="button" id="resetBtn" class="btn btn-ghost">Her şeyi sıfırla</button>
+
     </form>
 
     <!-- ============ SAĞ: ÖZET ============ -->
-    <aside class="panel summary-panel" aria-live="polite">
+    <aside class="panel summary-panel" id="summary" aria-live="polite">
       <div class="summary card">
         <div class="print-only print-head">
           <h2>Teklif Özeti</h2>
@@ -583,7 +571,8 @@
         <h3 class="sub-title">Ağırlık Özeti <small id="wsQty">(1 adet)</small></h3>
         <div class="wsum" id="weightSummary"></div>
 
-        <h3 class="sub-title">Parça Dökümü <small>(1 adet)</small></h3>
+        <details class="fold">
+        <summary>Parça parça döküm <small>(1 adet)</small></summary>
         <div class="table-wrap">
           <table class="parts">
             <thead>
@@ -597,8 +586,12 @@
           </table>
         </div>
 
-        <h3 class="sub-title">Parametreler</h3>
+        </details>
+
+        <details class="fold">
+        <summary>Seçilen ayarlar</summary>
         <ul class="spec-list" id="specList"></ul>
+        </details>
 
         <p class="fine">Teorik ağırlıktır; kesim firesi, kaynak sarfı ve hazır aksesuarlar (ray, menteşe, kulp, ayarlı ayak) dahil değildir.</p>
 
@@ -615,6 +608,12 @@
       </div>
     </aside>
   </main>
+
+  <div class="mobile-bar" id="mobileBar">
+    <div><span class="mb-label">Toplam</span><b id="mbKg">—</b> kg</div>
+    <div class="mb-price" id="mbPrice">—</div>
+    <a href="#summary" class="mb-link">Sonuç ↓</a>
+  </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 

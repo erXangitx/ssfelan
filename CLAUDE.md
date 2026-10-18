@@ -19,10 +19,14 @@ deneme/soru yapma, tahmin ettiğin ölçüyü koda gömme (ekranda değiştirile
 - Özet panelinde **Ağırlık Özeti**: sac (kalınlığa göre) ve profil (kesite göre) ayrı kg; altında parça dökümü.
 
 ## Arayüz ilkesi
-Kullanıcı çok seçenekten bunalıyor: **her işte değişmeyen ayarlar "Gelişmiş ayarlar" tikinin arkasında**
-(`data-adv` özniteliği; `body.show-adv` sınıfı). Ana ekranda yalnızca iş başına değişenler görünür:
-model kartı, ölçüler, sırt/yan sırt, çevre profili, taban rafı, dolap ara rafı, evye, fiyat/işçilik.
-Yeni sabit değerli alan eklerken `data-adv` ver.
+Kullanıcı karmaşık arayüzden bunaldı → **4 adımlı basit akış** (adım numaraları CSS counter ile otomatik):
+1) Ne üretiyorsunuz? (3 kart) → 2) Model ve ölçü (tezgahta hazır model kartları + ⇄, ölçüler, altı gösteren
+çubuk, "Özel düzen kur" açılır) → 3) Seçenekler (sırt Arka/Sol/Sağ + yükseklik, açık bölme yan/arka profil +
+raf, dolap ara rafı, evye) → 4) Fiyat (kalite, adet, para birimi, işçilik bazlı / kg bazlı).
+Her işte değişmeyen ayarlar "Daha fazla ayar" tikinin arkasında (`data-adv`, `body.show-adv`). Yeni sabit
+değerli alan eklerken `data-adv` ver; jargon kullanma. Sağ panel: kg + fiyat, ağırlık özeti (sac/profil)
+açık; "Parça parça döküm" ve "Seçilen ayarlar" açılır-kapanır (yazdırırken otomatik açılır).
+Mobilde altta sabit sonuç çubuğu (kg + fiyat) var.
 
 ## Çalışma tezgahı (şu an odak; bölme sistemi)
 - Üst: üst tabla (40 mm etek; sırt olan kenarda etek yok, sırt açınımı kullanılır — çift sayım yok) + sırt (60/100 mm) + **omega** (tabla altı, derinlik yönünde).
@@ -42,7 +46,7 @@ Yeni sabit değerli alan eklerken `data-adv` ver.
   altına omega: seçilebilir 1/2).
 - **Dolap ara raf omega:** kullanıcı "genelde 1, en fazla 2" dedi → seçilebilir (1 / 2 / otomatik: ≤700→1, üstü 2).
   **Ø8 dolu mil çubuk:** dolapta ara raf + taban rafı üstüne boydan boya (adet = ara raf + 1, boy = dolap genişliği − 80 mm), kapaklı/kapaksız fark etmeden hepsinde; seçilebilir (varsayılan var). **Açık bölmenin taban rafına Ø8 çubuk KOYULMAZ** (ürün rahat girsin); orada önden arkaya giden profil (yalpalık) vardır.
-- **Yan sırt:** tezgahın sol/sağ yanı duvara geliyorsa seçilir (yok / var; yükseklik = normal sırt yüksekliği; uzunluk = tabla derinliği).
+- **Sırt:** Arka/Sol/Sağ kenar seçilir (duvara dayanan kenarlar), tek yükseklik (60/100); yan sırt uzunluğu = tabla derinliği.
 - Mobilya yan büküm payı **40 mm** (`TZ.panelFlange`, `TZ.shelfFlange`).
 - **Çekmece:** 2–5 adet, kutu + çift cidar ön, **tamamı 0.8 mm**.
 - **Makine boşluğu:** 600×700×820 mm; tezgah yüksekliği en az 900 (otomatik yükselir); dış yanına sac.

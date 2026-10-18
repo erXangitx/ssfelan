@@ -74,7 +74,7 @@
   const DEFAULTS = {
     furniture: "tezgah", grade: "304", qty: 1, price: 4.2, currency: "USD",
     showAdv: "0", calcMode: "labor", kgSalePrice: 9, laborHours: 8, laborRate: 10,
-    tz_L: 1200, tz_W: 700, tz_H: 900, tz_t: "1.2", tz_back: "100", tz_backL: "0", tz_backR: "0",
+    tz_L: 1200, tz_W: 700, tz_H: 900, tz_t: "1.2", tz_backB: "1", tz_backH: "100", tz_backL: "0", tz_backR: "0",
     tz_shelfOmega: "1", tz_rod: "1",
     tz_omegaW: 120, tz_omegaT: "1.2",
     tz_sections: [{ type: "drawer", width: "450", count: 3 }, { type: "open", width: "" }],
@@ -88,7 +88,7 @@
     rf_yalFront: "1", rf_yalBack: "0", rf_yalLeft: "1", rf_yalRight: "1",
   };
 
-  const STORAGE_KEY = "ss-furniture-calc:v9";
+  const STORAGE_KEY = "ss-furniture-calc:v11";
 
   // ---------------------------------------------------------
   // 2) TEMEL HESAP FONKSİYONLARI
@@ -340,7 +340,7 @@
 
       // Yan sırt: duvara gelen sol/sağ taraf
       [["Sol", p.backL], ["Sağ", p.backR]].forEach(([name, on]) => {
-        const h = on ? (back > 0 ? back : 100) : 0; // yan sırt yüksekliği = normal sırt
+        const h = on ? p.backH : 0; // yan sırt yüksekliği = normal sırt
         if (h > 0) {
           parts.push(sheetPart(`${name} yan sırt (H ${h})`, `${W}×${h + TZ.backReturn} açınım`,
             mm2ToM2(W, h + TZ.backReturn), t, density));
@@ -497,7 +497,7 @@
     if (furniture === "tezgah") {
       s.params = {
         L: num("tz_L"), W: num("tz_W"), H: num("tz_H"),
-        t: parseFloat(val("tz_t")), back: int("tz_back"), backL: val("tz_backL") === "1", backR: val("tz_backR") === "1",
+        t: parseFloat(val("tz_t")), back: chk("tz_backB") ? int("tz_backH") : 0, backH: int("tz_backH"), backL: chk("tz_backL"), backR: chk("tz_backR"),
         shelfOmega: parseInt(val("tz_shelfOmega"), 10) || 0, rod: val("tz_rod") === "1",
         omega: { w: num("tz_omegaW"), t: parseFloat(val("tz_omegaT")) },
         sections: tzSections.map((x) => ({ ...newSection(x.type), ...x })),
@@ -595,9 +595,9 @@
       specific = [
         ["Ölçü (L×W×H)", `${p.L}×${p.W}×${p.H} mm`],
         ["Tabla sacı", `${fmtNum(p.t, 1)} mm`],
-        ["Sırt", selText("tz_back")],
-        ...(p.backL ? [["Sol yan sırt", `H ${p.back > 0 ? p.back : 100} mm`]] : []),
-        ...(p.backR ? [["Sağ yan sırt", `H ${p.back > 0 ? p.back : 100} mm`]] : []),
+        ["Sırt", p.back > 0 ? `Arka H ${p.back} mm` : "Arka yok"],
+        ...(p.backL ? [["Sol yan sırt", `H ${p.backH} mm`]] : []),
+        ...(p.backR ? [["Sağ yan sırt", `H ${p.backH} mm`]] : []),
         ["Omega destek", `${p.omega.w} mm açınım, ${fmtNum(p.omega.t, 1)} mm`],
         ["Bölmeler", secs.map((x) => `${sectionLabel(x)} ${x.w}`).join(" | ")],
       ];
@@ -906,6 +906,8 @@
       ["#kpiWeight", "#kpiTotal", "#costMaterial", "#costLabor", "#costExtra", "#costTotal"].forEach((id) => { $(id).textContent = "—"; });
       $("#kpiWeightUnit").textContent = "Ölçüleri kontrol edin";
       $("#kpiTotalUnit").textContent = "";
+      $("#mbKg").textContent = "—";
+      $("#mbPrice").textContent = "—";
       $("#partsBody").innerHTML = "";
       $("#notices").hidden = true;
       return;
@@ -922,6 +924,8 @@
     $("#kpiWeightUnit").textContent = `Birim: ${fmtNum(r.unit.kg)} kg`;
     $("#kpiTotal").textContent = fmtMoney(r.total, s.currency);
     $("#kpiTotalUnit").textContent = `Birim: ${fmtMoney(r.unitTotal, s.currency)}`;
+    $("#mbKg").textContent = fmtNum(r.totalKg);
+    $("#mbPrice").textContent = fmtMoney(r.total, s.currency);
     $("#costMaterial").textContent = fmtMoney(r.material, s.currency);
     $("#costLabor").textContent = fmtMoney(r.labor, s.currency);
     $("#costTotal").textContent = fmtMoney(r.total, s.currency);
@@ -1133,6 +1137,10 @@
   // ---------------------------------------------------------
   // BAŞLAT
   // ---------------------------------------------------------
+  // Yazdırırken açılır-kapanır bölümler açılır, sonra eski haline döner
+  window.addEventListener("beforeprint", () => $$(".summary-panel details").forEach((d) => { d.dataset.was = d.open ? "1" : "0"; d.open = true; }));
+  window.addEventListener("afterprint", () => $$(".summary-panel details").forEach((d) => { d.open = d.dataset.was === "1"; }));
+
   initTheme();
   renderTemplates();
   renderSectionRows();
