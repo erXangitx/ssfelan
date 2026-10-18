@@ -30,7 +30,8 @@ Mobilde altta sabit sonuç çubuğu (kg + fiyat) var.
 
 ## Çalışma tezgahı (şu an odak; bölme sistemi)
 - Üst: üst tabla (40 mm etek; sırt olan kenarda etek yok, sırt açınımı kullanılır — çift sayım yok) + sırt (60/100 mm) + **omega** (tabla altı, derinlik yönünde).
-  Omega adedi boya göre: <800→1, 800–1300→2, 1300–2000→3, 2000–2400→4. **Tezgah en fazla 2400 mm.**
+  **Omega boydan boya** (uzunluk yönünde, firma çizimlerindeki gibi): tabla altı uzunluk = L − 80, adet seçilebilir
+  (varsayılan 2, Gelişmiş ayarlar); raf altı (taban + ara raf) omega da boydan boya, adet 1/2 (varsayılan 1). **Tezgah en fazla 2400 mm.**
 - Alt kısım **soldan sağa bölmeler**: Açık / Dolap / Çekmece / Makine. Genişliği boş bölme kalanı alır.
   Üstte **hazır model kartları** (altı boş, taban raflı, dolap çarpma/sürgü, çekmece+açık, çekmece+dolap,
   makine+açık, makine+dolap) + **⇄ ters çevir**; "Detaylı düzenle" ile elle bölme kurulur.
@@ -52,6 +53,12 @@ Mobilde altta sabit sonuç çubuğu (kg + fiyat) var.
 - **Makine boşluğu:** 600×700×820 mm; tezgah yüksekliği en az 900 (otomatik yükselir); dış yanına sac.
 - **Evye:** hazır evye (adet + birim fiyat → hazır ürün) veya imalat hazne (sacdan). Tabla kesiği ağırlıktan DÜŞÜLMEZ.
 - Profil ayak/boru "alt raf boru" seçeneği tezgahta YOK (boru raf sadece istif rafında var).
+
+## Firma karşılaştırması (doğrulama notu)
+Rakip firma çizimi: 1500×650×900 açık tezgah, 30 mm sırt, 4 ayak, sadece yan alt kayıtlar (150 mm), masa 29.48 kg.
+Sistemimiz 1.2 mm sac/profille 20.46 kg verir; fark **hesap hatası değil, kalınlık girdisi**: tabla 1.5 + 40×40×2 ayak ≈ 26.4,
+tabla 2.0 + profil 1.5 ≈ 29.1. Çizimdeki "1,5" ölçüsü sac kalınlığı olabilir. Gelişmiş ayarlarda tabla sacı ve
+ayak/profil et kalınlığı (1.2/1.5/2.0) seçilebilir. Gerçek tartı veya firma spesifikasyonu gelince kalibre et.
 
 ## Duvar dolabı
 Ara raf yok/1–3; kapak sürme/çarpma/kapaksız; Ø8 dolu mil yalpalık (ara raflar ve/veya taban, 1–2 sıra).

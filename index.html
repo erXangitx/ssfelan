@@ -112,6 +112,7 @@
             <label class="chip"><input type="checkbox" id="tz_backL" name="tz_backL" /><span>Sol</span></label>
             <label class="chip"><input type="checkbox" id="tz_backR" name="tz_backR" /><span>Sağ</span></label>
             <select id="tz_backH" name="tz_backH" class="chip-select" aria-label="Sırt yüksekliği">
+              <option value="30">30 mm</option>
               <option value="60">60 mm</option>
               <option value="100" selected>100 mm</option>
             </select>
@@ -237,7 +238,26 @@
               </select>
             </div>
           </div>
-          <p class="note">Omega adedi boya göre: 800 altı → 1 · 800–1300 → 2 · 1300–2000 → 3 · 2000–2400 → 4.</p>
+          <div class="grid g-2">
+            <div class="field">
+              <label for="tz_omegaN">Tabla altı omega adedi (boydan boya)</label>
+              <select id="tz_omegaN" name="tz_omegaN">
+                <option value="1">1 adet</option>
+                <option value="2" selected>2 adet</option>
+                <option value="3">3 adet</option>
+                <option value="4">4 adet</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="tz_profT">Ayak / profil et kalınlığı (40×40)</label>
+              <select id="tz_profT" name="tz_profT">
+                <option value="1.2" selected>1.2 mm</option>
+                <option value="1.5">1.5 mm</option>
+                <option value="2.0">2.0 mm</option>
+              </select>
+            </div>
+          </div>
+          <p class="note">Omega tabla ve raf altında boydan boya uzanır; raf altı adedi aşağıdaki "ara raf omega adedi"nden gelir.</p>
 
           <div data-needs="open">
             <div class="grid g-2">
@@ -294,7 +314,7 @@
                 </select>
               </div>
               <div class="field">
-                <label for="tz_shelfOmega">Ara raf omega adedi</label>
+                <label for="tz_shelfOmega">Raf altı omega adedi (ara + taban)</label>
                 <select id="tz_shelfOmega" name="tz_shelfOmega">
                   <option value="1" selected>1 adet (genelde)</option>
                   <option value="2">2 adet (en fazla)</option>
