@@ -29,9 +29,11 @@ açık; "Parça parça döküm" ve "Seçilen ayarlar" açılır-kapanır (yazdı
 Mobilde altta sabit sonuç çubuğu (kg + fiyat) var.
 
 ## Çalışma tezgahı (şu an odak; bölme sistemi)
-- Üst: üst tabla (40 mm etek; sırt olan kenarda etek yok, sırt açınımı kullanılır — çift sayım yok) + sırt (60/100 mm) + **omega** (tabla altı, derinlik yönünde).
+- Üst: üst tabla (40 mm etek; sırt olan kenarda etek yok, sırt açınımı kullanılır — çift sayım yok) + sırt (30/60/100 mm) + **omega** (tabla altı, derinlik yönünde).
   **Omega boydan boya** (uzunluk yönünde, firma çizimlerindeki gibi): tabla altı uzunluk = L − 80, adet seçilebilir
   (varsayılan 1 — boydan boya tek omega yeter; Gelişmiş ayarlar); raf altı (taban + ara raf) omega da boydan boya, adet 1/2 (varsayılan 1). **Tezgah en fazla 2400 mm.**
+- **Sırt üst tablanın parçasıdır** (tek sac, abkant): açınım = yükseklik + **35 mm geri büküm** (100 → 135); ayrı parça yazılmaz,
+  "Üst tabla (etek + sırt dahil)" ağırlığına girer. Sırt olan kenarda 40 mm etek yerine sırt açınımı kullanılır (arka/sol/sağ).
 - Alt kısım **soldan sağa bölmeler**: Açık / Dolap / Çekmece / Makine. Genişliği boş bölme kalanı alır.
   Üstte **hazır model kartları** (altı boş, taban raflı, dolap çarpma/sürgü, çekmece+açık, çekmece+dolap,
   makine+açık, makine+dolap) + **⇄ ters çevir**; "Detaylı düzenle" ile elle bölme kurulur.

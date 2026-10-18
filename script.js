@@ -41,7 +41,7 @@
   // İmalat varsayımları (mm)
   const TZ = {
     edgeFlange: 40,    // üst tabla ön/yan etek büküm payı
-    backReturn: 20,    // sırt üst dönüş büküm payı
+    backReturn: 35,    // sırt geri büküm payı (sırt açınımı = yükseklik + 35; 100 mm sırt → 135)
     legInset: 80,      // ayaklar arası çerçeve için iç mesafe (2 × profil)
     shelfFlange: 40,   // raf kenar büküm
     panelFlange: 40,   // gövde panelleri (mobilya) yan büküm payı
@@ -310,30 +310,20 @@
       const parts = [];
 
       // ===== Ortak: üst tabla, sırt, omega destek, evye =====
-      // Etek (40 mm) yalnızca sırtın olmadığı kenarlarda; sırt olan kenarda sırt açınımı kullanılır
+      // Üst tabla tek sacdan abkantlanır: ön etek 40 mm; sırt olan kenarda sırt açınımı
+      // (yükseklik + 35 mm geri büküm), diğer kenarlarda 40 mm etek. Hepsi üst tablaya dahildir.
       const eF = TZ.edgeFlange;
-      const eB = back > 0 ? 0 : eF;
-      const eL = p.backL ? 0 : eF;
-      const eR = p.backR ? 0 : eF;
-      parts.push(sheetPart("Üst tabla", `${L}×${W} + ${TZ.edgeFlange} mm etek (sırtsız kenarlar)`,
+      const sirt = (h) => h + TZ.backReturn;
+      const eB = back > 0 ? sirt(back) : eF;
+      const eL = p.backL ? sirt(p.backH) : eF;
+      const eR = p.backR ? sirt(p.backH) : eF;
+      const sirtler = [back > 0 && `arka sırt ${back}`, p.backL && `sol sırt ${p.backH}`, p.backR && `sağ sırt ${p.backH}`].filter(Boolean);
+      parts.push(sheetPart("Üst tabla (etek + sırt dahil)",
+        `${L}×${W} + ${eF} mm etek${sirtler.length ? `, ${sirtler.join(", ")} (+${TZ.backReturn} geri büküm)` : ""}`,
         (L + eL + eR) * (W + eF + eB) / 1e6, t, density));
-
-      if (back > 0) {
-        parts.push(sheetPart(`Sırt (H ${back})`, `${L}×${back + TZ.backReturn} açınım`,
-          mm2ToM2(L, back + TZ.backReturn), t, density));
-      }
 
       // Tabla altına derinlik yönünde (dikine) omega büküm destekler
       parts.push(lengthOmega("Tabla altı omega (boydan boya)", p.omegaN, L - 2 * TZ.edgeFlange, p.omega, density));
-
-      // Yan sırt: duvara gelen sol/sağ taraf
-      [["Sol", p.backL], ["Sağ", p.backR]].forEach(([name, on]) => {
-        const h = on ? p.backH : 0; // yan sırt yüksekliği = normal sırt
-        if (h > 0) {
-          parts.push(sheetPart(`${name} yan sırt (H ${h})`, `${W}×${h + TZ.backReturn} açınım`,
-            mm2ToM2(W, h + TZ.backReturn), t, density));
-        }
-      });
 
       // İmalat evye haznesi sac ağırlığına eklenir; hazır evye fiyatı compute() içinde eklenir
       if (sink && sink.src === "fab") {
