@@ -45,6 +45,9 @@ Mobilde altta sabit sonuç çubuğu (kg + fiyat) var.
   ayarlı ayak fiyatı hazır ürün). Açık bölmenin kapalıya bakan tarafında profil ayak/çevre profili yok;
   kapalı bölmenin yan sacı taşır. Yan yana iki kapalı bölme arasında **tek ortak yan sac**.
 - **Dolap derinliği = tabla derinliği − 80 mm** (ön 40 + arka 40 geri çekme; gerçek çizimden: tabla 750 → dolap 670). Ayarlanabilir (`tz_cabRecess`).
+- **Ara raflı dolap duvarı = kapak gibi çift cidar:** yan + arka duvar iç içe geçen 2 × 0.8 mm parça (iç sac dış sacın
+  25 mm içinde, 15 mm büküm); raf aradaki bölmelere asılır (hem arka hem sağ hem sol). Ara rafsız dolap tek sac. Komşu paneli
+  ara raflı dolaba bakan yan saclar çift cidar olur. Seçilebilir (`tz_dblWall`, Gelişmiş ayarlar). Raf asma için ayrı taşıyıcı parça YOK.
 - **Dolap:** çarpma kapak = **çift cidar 2×0.8 mm**; sürgü kapak **1.0 mm**; ara raf 0–2 (0.8 mm,
   altına omega: seçilebilir 1/2).
 - **Dolap ara raf omega:** kullanıcı "genelde 1, en fazla 2" dedi → seçilebilir (1 / 2 / otomatik: ≤700→1, üstü 2).

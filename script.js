@@ -75,7 +75,7 @@
     furniture: "tezgah", grade: "304", qty: 1, price: 4.2, currency: "USD",
     showAdv: "0", calcMode: "labor", kgSalePrice: 9, laborHours: 8, laborRate: 10,
     tz_L: 1200, tz_W: 700, tz_H: 900, tz_t: "1.2", tz_backB: "1", tz_backH: "100", tz_backL: "0", tz_backR: "0",
-    tz_shelfOmega: "1", tz_rod: "1",
+    tz_shelfOmega: "1", tz_rod: "1", tz_dblWall: "1",
     tz_omegaW: 120, tz_omegaT: "1.2", tz_omegaN: "1", tz_profT: "1.2",
     tz_sections: [{ type: "drawer", width: "450", count: 3 }, { type: "open", width: "" }],
     tz_yalFront: "0", tz_yalBack: "1", tz_yalLeft: "1", tz_yalRight: "1", tz_lowShelfT: "1.0",
@@ -88,7 +88,7 @@
     rf_yalFront: "1", rf_yalBack: "0", rf_yalLeft: "1", rf_yalRight: "1",
   };
 
-  const STORAGE_KEY = "ss-furniture-calc:v13";
+  const STORAGE_KEY = "ss-furniture-calc:v14";
 
   // ---------------------------------------------------------
   // 2) TEMEL HESAP FONKSİYONLARI
@@ -133,6 +133,11 @@
   function lengthOmega(name, n, len, omega, density) {
     return sheetPart(`${name} (${n} adet)`, `${n} × ${len}×${omega.w} açınım`,
       n * mm2ToM2(len, omega.w), omega.t, density);
+  }
+
+  /** Çift cidar iç sac alanı (dış sacın içine geçen parça): kapaktaki gibi 25 mm içeride, 15 mm büküm */
+  function innerSkinArea(w, h) {
+    return flangedArea(w - 2 * TZ.doorFlange, h - 2 * TZ.doorFlange, TZ.innerFlange);
   }
 
   /** Çarpma kapak: çift cidar (dış + iç sac) */
@@ -192,10 +197,15 @@
     let legPairs = 0;
     let closedPanels = 0;
     let machineEdgePanels = 0;
+    let dblPanels = 0; // ara raflı dolaba komşu yan paneller (çift cidar)
+    const shelved = (x) => !!x && x.type === "cabinet" && x.shelves > 0;
     for (let b = 0; b <= secs.length; b++) {
       const left = secs[b - 1];
       const right = secs[b];
-      if (isClosed(left) || isClosed(right)) closedPanels++;            // kapalı bölme yan sacı (komşu kapalıyla ortak)
+      if (isClosed(left) || isClosed(right)) {                           // kapalı bölme yan sacı (komşu kapalıyla ortak)
+        closedPanels++;
+        if (p.dblWall && (shelved(left) || shelved(right))) dblPanels++;
+      }
       else if ((left && left.type === "open") || (right && right.type === "open")) legPairs++; // profil ayak çifti
       else machineEdgePanels++;                                          // makinenin dış yanı
     }
@@ -224,6 +234,10 @@
     if (closedPanels) {
       parts.push(sheetPart(`Kapalı bölme yan sacları (${closedPanels} adet)`, `${closedPanels} × ${cabD}×${sideH}`,
         closedPanels * flangedArea(cabD, sideH, pf), p.bodyT, density));
+      if (dblPanels) {
+        parts.push(sheetPart(`Dolap iç yan sacları — raf asma (${dblPanels} adet, çift cidar)`, `${dblPanels} × ${cabD}×${sideH} iç sac`,
+          dblPanels * innerSkinArea(cabD, sideH), p.bodyT, density));
+      }
       const feet = closedPanels * 2;
       parts.push(profilePart(`Ayarlı ayak profilleri (${feet} adet)`, `${BOX_PROFILE.label} · ${feet}×${TZ.footProfile}`,
         feet * TZ.footProfile, boxKgM, BOX_PROFILE.label));
@@ -255,6 +269,10 @@
 
       // Kapalı bölme: arka sac + taban rafı (+ omega)
       parts.push(sheetPart(`${t} · arka sac`, `${w}×${sideH}`, flangedArea(w, sideH, pf), p.bodyT, density));
+      if (p.dblWall && sec.type === "cabinet" && sec.shelves > 0) {
+        parts.push(sheetPart(`${t} · arka iç sac — raf asma (çift cidar)`, `${w}×${sideH} iç sac`,
+          innerSkinArea(w, sideH), p.bodyT, density));
+      }
       parts.push(sheetPart(`${t} · taban rafı`, `${w}×${cabD - 20}`, flangedArea(w, cabD - 20, pf), p.bottomT, density));
       parts.push(lengthOmega(`${t} · taban omega`, shelfN(w - 10), w - 10, p.omega, density));
 
@@ -476,7 +494,7 @@
       s.params = {
         L: num("tz_L"), W: num("tz_W"), H: num("tz_H"),
         t: parseFloat(val("tz_t")), back: chk("tz_backB") ? int("tz_backH") : 0, backH: int("tz_backH"), backL: chk("tz_backL"), backR: chk("tz_backR"),
-        shelfOmega: parseInt(val("tz_shelfOmega"), 10) || 0, rod: val("tz_rod") === "1",
+        shelfOmega: parseInt(val("tz_shelfOmega"), 10) || 0, rod: val("tz_rod") === "1", dblWall: val("tz_dblWall") === "1",
         omega: { w: num("tz_omegaW"), t: parseFloat(val("tz_omegaT")) }, omegaN: int("tz_omegaN"), profT: parseFloat(val("tz_profT")),
         sections: tzSections.map((x) => ({ ...newSection(x.type), ...x })),
         yal: { front: chk("tz_yalFront"), back: chk("tz_yalBack"), left: chk("tz_yalLeft"), right: chk("tz_yalRight") },
@@ -590,6 +608,7 @@
           ["Ayarlı ayak", `${p.plinth} mm`],
           ["Ara raf omega", p.shelfOmega > 0 ? `${p.shelfOmega} adet` : "Otomatik"],
           ["Ø8 çubuk", p.rod ? "Var" : "Yok"],
+          ["Ara raflı dolap duvarı", p.dblWall ? "Çift cidar (iç içe 2 × 0,8)" : "Tek sac"],
         );
       }
       specific.push(["Evye", sinkText]);
